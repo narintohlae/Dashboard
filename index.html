@@ -112,7 +112,7 @@
                             <tr>
                                 <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">วันที่ส่ง</th>
                                 <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ประเภท / วันที่</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ประเภท / วันที่ต้องการ</th>
                                 <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">เหตุผล</th>
                                 <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">สถานะ</th>
                                 <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
@@ -127,9 +127,9 @@
 
             <!-- Tab 3: จัดการพนักงาน -->
             <div id="content-employees" class="hidden">
-                <div class="flex justify-between items-center mb-4 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                    <p class="text-sm text-yellow-800">
-                        <span class="font-bold">คำแนะนำ:</span> เนื่องจากแอปพนักงานเปลี่ยนมาใช้ <span class="font-bold underline">ระบบล็อคอินด้วยรหัส PIN (ไม่ต้องเลือกชื่อ)</span> กรุณาตรวจสอบให้แน่ใจว่าพนักงานทุกคนมีรหัส PIN 4 หลัก และไม่ซ้ำกัน
+                <div class="flex justify-between items-center mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p class="text-sm text-blue-800">
+                        <span class="font-bold">ข้อมูลพนักงาน:</span> รหัส PIN ของพนักงานแต่ละคนต้องไม่ซ้ำกัน เพื่อใช้เข้าสู่ระบบบนมือถือของพวกเขาเอง
                     </p>
                     <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg shadow-md transition flex items-center font-bold whitespace-nowrap ml-4">
                         + เพิ่มพนักงาน
@@ -230,6 +230,12 @@
             return date.toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         };
 
+        const formatDisplayDate = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+        };
+
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -290,11 +296,18 @@
                     if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
                     if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-800 border-rose-200';
 
+                    let typeDisplay = `<span class="font-bold text-blue-600">${req.type}</span>`;
+                    let dateDisplay = `<span class="text-xs text-gray-500 font-bold">หยุด: ${formatDisplayDate(req.date)}</span>`;
+                    
+                    if (req.type === 'สลับวันหยุด' && req.swapDate) {
+                        dateDisplay += `<br><span class="text-xs text-emerald-600 font-bold">มาแทน: ${formatDisplayDate(req.swapDate)}</span>`;
+                    }
+
                     return `
                     <tr class="hover:bg-gray-50">
                         <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(req.timestamp).split(' ')[0]}</td>
                         <td class="py-3 px-4 border-b font-bold text-gray-800">${req.name}</td>
-                        <td class="py-3 px-4 border-b text-sm"><span class="font-bold text-blue-600">${req.type}</span><br><span class="text-xs text-gray-500">${req.date}</span></td>
+                        <td class="py-3 px-4 border-b text-sm">${typeDisplay}<br>${dateDisplay}</td>
                         <td class="py-3 px-4 border-b text-sm max-w-xs truncate" title="${req.reason}">${req.reason}</td>
                         <td class="py-3 px-4 border-b text-center"><span class="px-3 py-1 rounded-md text-xs font-bold border ${statusColor}">${req.status}</span></td>
                         <td class="py-3 px-4 border-b text-center">
@@ -321,7 +334,7 @@
                 if (employeesDataGlobal.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
                 
                 tbody.innerHTML = employeesDataGlobal.map(emp => {
-                    const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; // ซ่อน PIN เพื่อความปลอดภัย (ตอนแก้ไขค่อยแสดง)
+                    const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; 
                     return `
                     <tr class="hover:bg-gray-50">
                         <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}</td>
@@ -354,7 +367,6 @@
             if (!name) return showMessage("กรุณาระบุชื่อพนักงาน", true);
             if (!pin || pin.length < 4) return showMessage("กรุณากำหนดรหัส PIN 4 หลัก", true);
 
-            // เช็คว่า PIN ซ้ำกับพนักงานคนอื่นหรือไม่ (โดยไม่เช็คกับตัวเองตอนแก้ไข)
             const duplicatePin = employeesDataGlobal.find(e => e.pin === pin && e.id !== id);
             if (duplicatePin) {
                 return showMessage(`รหัส PIN นึ้ถูกใช้โดยคุณ "${duplicatePin.name}" แล้ว กรุณาเปลี่ยนใหม่`, true);
