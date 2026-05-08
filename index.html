@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานการลงเวลาพนักงาน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        
+        /* สไตล์สำหรับ Loader */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3B82F6;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+
+    <nav class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="font-bold text-xl">ระบบรายงานสำหรับผู้จัดการ</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 id="pageTitle" class="text-2xl font-bold text-gray-900">ประวัติการลงเวลา</h1>
+                <p id="pageDesc" class="text-gray-500 text-sm mt-1">แสดงข้อมูลการเข้า-ออกงานของพนักงานทั้งหมด</p>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <span id="syncStatus" class="text-sm text-gray-500 flex items-center">
+                    <div class="loader mr-2" id="syncLoader"></div>
+                    กำลังโหลดข้อมูล...
+                </span>
+                <button id="btnRefresh" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg shadow-sm text-sm font-medium transition-colors">
+                    รีเฟรชข้อมูล
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="tabLogs" class="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    ประวัติลงเวลา
+                </button>
+                <button id="tabRequests" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors">
+                    คำร้องขออนุมัติ
+                    <span id="badgePending" class="hidden ml-2 bg-red-100 text-red-600 py-0.5 px-2.5 rounded-full text-xs font-semibold">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- กล่องสำหรับประวัติการลงเวลา -->
+        <div id="viewLogs" class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+            
+            <!-- เครื่องมือกรองข้อมูล (ทำงานแบบ in-memory ตามกฏ) -->
+            <div class="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row gap-4">
+                <div class="w-full sm:w-64">
+                    <input type="text" id="searchInput" placeholder="ค้นหาชื่อพนักงาน..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div class="w-full sm:w-48">
+                    <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <option value="ALL">ทุกประเภท</option>
+                        <option value="IN">เฉพาะเข้างาน</option>
+                        <option value="OUT">เฉพาะออกงาน</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วัน/เวลา</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อพนักงาน</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภท</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- แถวข้อมูลจะถูกเพิ่มด้วย JavaScript -->
+                        <tr>
+                            <td colspan="3" class="px-6 py-10 text-center text-gray-500">
+                                กำลังโหลดข้อมูลประวัติการลงเวลา...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 text-sm text-gray-500 flex justify-between items-center">
+                <span>จำนวนรายการทั้งหมด: <strong id="totalRecords">0</strong> รายการ</span>
+            </div>
+        </div>
+
+        <!-- กล่องสำหรับคำร้องขออนุมัติ -->
+        <div id="viewRequests" class="hidden bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-800">รายการคำร้องที่รอการตรวจสอบ</h3>
+                <select id="reqStatusFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <option value="ALL">สถานะทั้งหมด</option>
+                    <option value="PENDING" selected>รออนุมัติ</option>
+                    <option value="APPROVED">อนุมัติแล้ว</option>
+                    <option value="REJECTED">ปฏิเสธ</option>
+                </select>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">พนักงาน</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภท</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่/เหตุผล</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTableBody" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="5" class="px-6 py-10 text-center text-gray-500">กำลังโหลดข้อมูลคำร้อง...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- กล่อง Toast แบบง่าย สำหรับฝั่ง Manager -->
+    <div id="managerToast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none z-50 flex items-center">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-time-tracker-app';
+        let db;
+        let auth;
+        
+        // ตัวแปรเก็บข้อมูลทั้งหมดที่ดึงมา เพื่อใช้ในการกรอง (in-memory)
+        let allTimeLogs = [];
+        let allRequests = [];
+
+        // ตัวแปร DOM
+        const tableBody = document.getElementById('tableBody');
+        const syncStatus = document.getElementById('syncStatus');
+        const syncLoader = document.getElementById('syncLoader');
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const totalRecords = document.getElementById('totalRecords');
+        const btnRefresh = document.getElementById('btnRefresh');
+
+        // ตัวแปร DOM เพิ่มเติมสำหรับ Tabs และ Requests
+        const tabLogs = document.getElementById('tabLogs');
+        const tabRequests = document.getElementById('tabRequests');
+        const viewLogs = document.getElementById('viewLogs');
+        const viewRequests = document.getElementById('viewRequests');
+        const requestsTableBody = document.getElementById('requestsTableBody');
+        const badgePending = document.getElementById('badgePending');
+        const reqStatusFilter = document.getElementById('reqStatusFilter');
+        const managerToast = document.getElementById('managerToast');
+        const pageTitle = document.getElementById('pageTitle');
+        const pageDesc = document.getElementById('pageDesc');
+
+        // ฟังก์ชันแสดง Toast
+        function showManagerToast(msg) {
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = msg;
+            managerToast.classList.remove('opacity-0');
+            managerToast.classList.add('opacity-100');
+            setTimeout(() => {
+                managerToast.classList.remove('opacity-100');
+                managerToast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // ระบบ Tabs
+        function switchTab(tab) {
+            if (tab === 'LOGS') {
+                tabLogs.classList.add('border-indigo-500', 'text-indigo-600');
+                tabLogs.classList.remove('border-transparent', 'text-gray-500');
+                tabRequests.classList.remove('border-indigo-500', 'text-indigo-600');
+                tabRequests.classList.add('border-transparent', 'text-gray-500');
+                
+                viewLogs.classList.remove('hidden');
+                viewRequests.classList.add('hidden');
+                pageTitle.textContent = 'ประวัติการลงเวลา';
+                pageDesc.textContent = 'แสดงข้อมูลการเข้า-ออกงานของพนักงานทั้งหมด';
+            } else {
+                tabRequests.classList.add('border-indigo-500', 'text-indigo-600');
+                tabRequests.classList.remove('border-transparent', 'text-gray-500');
+                tabLogs.classList.remove('border-indigo-500', 'text-indigo-600');
+                tabLogs.classList.add('border-transparent', 'text-gray-500');
+                
+                viewRequests.classList.remove('hidden');
+                viewLogs.classList.add('hidden');
+                pageTitle.textContent = 'จัดการคำร้อง';
+                pageDesc.textContent = 'พิจารณาอนุมัติการลางาน และสลับวันหยุดของพนักงาน';
+            }
+        }
+
+        tabLogs.addEventListener('click', () => switchTab('LOGS'));
+        tabRequests.addEventListener('click', () => switchTab('REQUESTS'));
+
+        // ฟังก์ชันจัดรูปแบบวันที่และเวลา
+        function formatDateTime(timestampObj, clientTimeStr) {
+            let date;
+            
+            if (timestampObj && typeof timestampObj.toDate === 'function') {
+                date = timestampObj.toDate();
+            } else if (timestampObj && typeof timestampObj === 'number') {
+                date = new Date(timestampObj);
+            } else if (clientTimeStr) {
+                date = new Date(clientTimeStr);
+            } else {
+                return 'กำลังประมวลผล...';
+            }
+
+            const optionsDate = { year: 'numeric', month: 'short', day: 'numeric' };
+            const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            
+            // แสดงผลแบบ พ.ศ. (เพิ่ม 543 ปี)
+            const d = date.toLocaleDateString('th-TH', optionsDate);
+            const t = date.toLocaleTimeString('th-TH', optionsTime);
+            
+            return `${d} | ${t} น.`;
+        }
+
+        // ฟังก์ชันแสดงผลข้อมูลลงตาราง
+        function renderTable() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const filterType = typeFilter.value;
+
+            // กรองข้อมูล (RULE 2: กรองใน memory)
+            const filteredLogs = allTimeLogs.filter(log => {
+                const matchName = log.employeeName.toLowerCase().includes(searchTerm);
+                const matchType = filterType === 'ALL' || log.type === filterType;
+                return matchName && matchType;
+            });
+
+            filteredLogs.sort((a, b) => {
+                const timeA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : a.timestamp) : Date.now();
+                const timeB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : b.timestamp) : Date.now();
+                return timeB - timeA;
+            });
+
+            if (filteredLogs.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                            ไม่พบข้อมูลการลงเวลา
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tableBody.innerHTML = filteredLogs.map(log => {
+                    const isClockIn = log.type === 'IN';
+                    const typeBadgeClass = isClockIn 
+                        ? 'bg-green-100 text-green-800 border border-green-200' 
+                        : 'bg-orange-100 text-orange-800 border border-orange-200';
+                    const typeText = isClockIn ? 'เข้างาน' : 'ออกงาน';
+                    const iconSvg = isClockIn
+                        ? '<svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>'
+                        : '<svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>';
+
+                    return `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                ${formatDateTime(log.timestamp, log.clientTime)}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${log.employeeName || 'ไม่ระบุชื่อ'}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${typeBadgeClass}">
+                                    ${iconSvg}
+                                    ${typeText}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            totalRecords.textContent = filteredLogs.length;
+        }
+
+        // ฟังก์ชันตั้งค่าและดึงข้อมูลจาก Firebase
+        async function initApp() {
+            try {
+                if (typeof __firebase_config === 'undefined') {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-red-500">ไม่พบการตั้งค่าฐานข้อมูล</td></tr>';
+                    syncStatus.innerHTML = '<span class="text-red-500">เชื่อมต่อล้มเหลว</span>';
+                    return;
+                }
+
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // RULE 3: Auth Before Queries
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                if (!auth.currentUser) return;
+
+                // Path ข้อมูล (ต้องตรงกับแอปพนักงาน)
+                const timeLogsRef = collection(db, 'artifacts', appId, 'public', 'data', 'timelogs');
+                const requestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'requests');
+                
+                // ใช้ simple query ตาม RULE 2 (ไม่ใช้ orderBy) แล้วดักฟังการเปลี่ยนแปลง
+                const qLogs = query(timeLogsRef);
+                const qReqs = query(requestsRef);
+
+                // ดึงข้อมูล Logs
+                onSnapshot(qLogs, (snapshot) => {
+                    allTimeLogs = [];
+                    snapshot.forEach((doc) => {
+                        allTimeLogs.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    syncLoader.style.display = 'none';
+                    syncStatus.innerHTML = '<span class="text-green-600 font-medium text-xs">เชื่อมต่อแบบเรียลไทม์ (อัพเดทล่าสุด: ' + new Date().toLocaleTimeString('th-TH') + ')</span>';
+                    
+                    renderTable();
+                    
+                }, (error) => {
+                    console.error("Snapshot error:", error);
+                    syncStatus.innerHTML = '<span class="text-red-500 text-xs">ขาดการเชื่อมต่อ (Logs)</span>';
+                });
+
+                // ดึงข้อมูล Requests
+                onSnapshot(qReqs, (snapshot) => {
+                    allRequests = [];
+                    let pendingCount = 0;
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        allRequests.push({ id: doc.id, ...data });
+                        if (data.status === 'PENDING') pendingCount++;
+                    });
+                    
+                    // อัพเดท Badge แสดงจำนวนที่รออนุมัติ
+                    if (pendingCount > 0) {
+                        badgePending.textContent = pendingCount;
+                        badgePending.classList.remove('hidden');
+                    } else {
+                        badgePending.classList.add('hidden');
+                    }
+
+                    renderRequestsTable();
+                }, (error) => {
+                    console.error("Requests snapshot error:", error);
+                });
+
+            } catch (error) {
+                console.error("Init error:", error);
+                syncStatus.innerHTML = '<span class="text-red-500">เกิดข้อผิดพลาด</span>';
+            }
+        }
+
+        // เริ่มต้นการทำงาน
+        initApp();
+
+        // ฟังก์ชันแสดงผลตารางคำร้อง
+        function renderRequestsTable() {
+            const filterStatus = reqStatusFilter.value;
+            
+            // กรองและเรียงข้อมูล
+            const filteredReqs = allRequests.filter(req => filterStatus === 'ALL' || req.status === filterStatus);
+            filteredReqs.sort((a, b) => {
+                const timeA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : a.timestamp) : Date.now();
+                const timeB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : b.timestamp) : Date.now();
+                return timeB - timeA;
+            });
+
+            if (filteredReqs.length === 0) {
+                requestsTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">ไม่พบข้อมูลคำร้อง</td></tr>`;
+                return;
+            }
+
+            requestsTableBody.innerHTML = filteredReqs.map(req => {
+                const typeBadge = req.type === 'LEAVE' 
+                    ? '<span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full bg-purple-100 text-purple-800 border border-purple-200">ลางาน</span>'
+                    : '<span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full bg-teal-100 text-teal-800 border border-teal-200">สลับวันหยุด</span>';
+                
+                let statusBadge = '';
+                if (req.status === 'PENDING') statusBadge = '<span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">รอตรวจสอบ</span>';
+                else if (req.status === 'APPROVED') statusBadge = '<span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800 border border-green-200">อนุมัติแล้ว</span>';
+                else if (req.status === 'REJECTED') statusBadge = '<span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full bg-red-100 text-red-800 border border-red-200">ปฏิเสธ</span>';
+
+                let reqDateDisplay = req.requestDate;
+                if (reqDateDisplay) {
+                    const d = new Date(reqDateDisplay);
+                    if (!isNaN(d.getTime())) {
+                        reqDateDisplay = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                    }
+                }
+
+                // สร้างปุ่ม Action เฉพาะรายการที่รออนุมัติ
+                let actionButtons = '-';
+                if (req.status === 'PENDING') {
+                    actionButtons = `
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="window.updateReqStatus('${req.id}', 'APPROVED')" class="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-md shadow-sm transition" title="อนุมัติ">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            </button>
+                            <button onclick="window.updateReqStatus('${req.id}', 'REJECTED')" class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-md shadow-sm transition" title="ไม่อนุมัติ">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${req.employeeName || 'ไม่ระบุ'}</div>
+                            <div class="text-xs text-gray-400 mt-1">ส่งเมื่อ: ${formatDateTime(req.timestamp, req.clientTime).split(' |')[0]}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">${typeBadge}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 font-medium">วันที่: ${reqDateDisplay}</div>
+                            <div class="text-sm text-gray-500 mt-1 line-clamp-2" title="${req.reason}">${req.reason}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            ${actionButtons}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ทำให้ฟังก์ชันผูกกับ window เพื่อให้เรียกจาก onclick ใน HTML string ได้
+        window.updateReqStatus = async function(id, newStatus) {
+            if (!auth.currentUser) return;
+            
+            try {
+                const reqRef = doc(db, 'artifacts', appId, 'public', 'data', 'requests', id);
+                await updateDoc(reqRef, {
+                    status: newStatus
+                });
+                
+                const statusText = newStatus === 'APPROVED' ? 'อนุมัติ' : 'ปฏิเสธ';
+                showManagerToast(`ทำการ${statusText}คำร้องเรียบร้อยแล้ว`);
+            } catch (error) {
+                console.error("Error updating status:", error);
+                showManagerToast("เกิดข้อผิดพลาดในการอัพเดทสถานะ");
+            }
+        };
+
+        reqStatusFilter.addEventListener('change', renderRequestsTable);
+        searchInput.addEventListener('input', renderTable);
+        typeFilter.addEventListener('change', renderTable);
+        
+        btnRefresh.addEventListener('click', () => {
+            searchInput.value = '';
+            typeFilter.value = 'ALL';
+            renderTable();
+            
+            syncStatus.innerHTML = '<div class="loader mr-2" style="width:14px; height:14px;"></div><span class="text-xs text-gray-500">กำลังรีเฟรช...</span>';
+            setTimeout(() => {
+                syncStatus.innerHTML = '<span class="text-green-600 font-medium text-xs">เชื่อมต่อแบบเรียลไทม์ (อัพเดทล่าสุด: ' + new Date().toLocaleTimeString('th-TH') + ')</span>';
+            }, 500);
+        });
+
+    </script>
+</body>
+</html>
