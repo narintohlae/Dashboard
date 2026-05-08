@@ -19,7 +19,6 @@
         <p id="message-text" class="text-gray-800 font-medium"></p>
     </div>
 
-    <!-- Modals (แทน prompt และ confirm) -->
     <!-- Employee Modal -->
     <div id="emp-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 px-4">
         <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
@@ -29,13 +28,18 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
                 <input type="text" id="emp-name" class="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น สมชาย ใจดี">
             </div>
-            <div class="mb-6">
+            <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">ตำแหน่ง</label>
-                <input type="text" id="emp-position" class="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น พนักงานขาย, บาริสต้า">
+                <input type="text" id="emp-position" class="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น พนักงานขาย">
+            </div>
+            <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100 shadow-inner">
+                <label class="block text-sm font-bold text-blue-800 mb-1">รหัส PIN (สำหรับลงเวลาเข้างาน) <span class="text-red-500">*</span></label>
+                <input type="password" id="emp-pin" maxlength="4" class="w-full border p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none tracking-[1em] text-center text-xl font-bold text-gray-700" placeholder="****">
+                <p class="text-xs text-blue-600 mt-2 font-medium">⚠️ รหัส PIN ต้องเป็นตัวเลข 4 หลัก และ "ห้ามซ้ำ" กับพนักงานคนอื่น</p>
             </div>
             <div class="flex justify-end space-x-3">
                 <button onclick="closeModal('emp-modal')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition">ยกเลิก</button>
-                <button onclick="saveEmployee()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">บันทึกข้อมูล</button>
+                <button onclick="saveEmployee()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium shadow">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
@@ -49,60 +53,52 @@
                 </svg>
             </div>
             <h3 class="text-lg font-bold mb-2 text-gray-900">ยืนยันการลบข้อมูล</h3>
-            <p id="delete-message" class="mb-6 text-sm text-gray-500">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+            <p id="delete-message" class="mb-6 text-sm text-gray-500">คุณแน่ใจหรือไม่?</p>
             <input type="hidden" id="delete-id">
             <input type="hidden" id="delete-collection">
             <div class="flex justify-center space-x-3">
-                <button onclick="closeModal('delete-modal')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition w-full">ยกเลิก</button>
-                <button onclick="executeDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium w-full">ลบข้อมูล</button>
+                <button onclick="closeModal('delete-modal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg w-full font-medium">ยกเลิก</button>
+                <button onclick="executeDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg w-full font-medium shadow">ลบข้อมูล</button>
             </div>
         </div>
     </div>
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">แผงควบคุมสำหรับผู้จัดการ</h1>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-wide">แผงควบคุมสำหรับผู้จัดการ</h1>
                 <p id="status" class="text-sm text-gray-500 mt-1">กำลังเชื่อมต่อฐานข้อมูล...</p>
             </div>
-            <div class="mt-4 md:mt-0 bg-blue-50 text-blue-800 px-4 py-2 rounded-lg font-medium shadow-sm">
+            <div class="mt-4 md:mt-0 bg-blue-50 text-blue-800 px-4 py-2 rounded-lg font-medium shadow-sm border border-blue-100">
                 วันนี้: <span id="current-date"></span>
             </div>
         </div>
 
         <!-- Navigation Tabs -->
         <div class="bg-white rounded-t-xl border-b flex overflow-x-auto">
-            <button onclick="switchTab('records')" id="tab-records" class="tab-btn active px-6 py-4 text-gray-600 font-medium whitespace-nowrap focus:outline-none transition hover:text-blue-600">
-                ประวัติลงเวลา
-            </button>
-            <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap focus:outline-none transition hover:text-blue-600 flex items-center relative">
+            <button onclick="switchTab('records')" id="tab-records" class="tab-btn active px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition">ประวัติลงเวลา</button>
+            <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex items-center">
                 คำร้องขออนุมัติ
                 <span id="badge-requests" class="hidden ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
             </button>
-            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap focus:outline-none transition hover:text-blue-600">
-                จัดการพนักงาน
-            </button>
+            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition">จัดการพนักงานและรหัส PIN</button>
         </div>
 
-        <div class="bg-white p-6 rounded-b-xl shadow-sm min-h-[500px]">
+        <div class="bg-white p-6 rounded-b-xl shadow-sm min-h-[500px] border border-t-0 border-gray-100">
             
             <!-- Tab 1: ประวัติการลงเวลา -->
             <div id="content-records" class="block">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-800">ประวัติการเข้า-ออกงานล่าสุด</h2>
-                    <button onclick="loadRecords()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded transition">รีเฟรช</button>
-                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border rounded-lg overflow-hidden">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">วันที่ / เวลา</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-semibold text-gray-700">สถานะ</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">วันที่ / เวลา</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">สถานะ</th>
                             </tr>
                         </thead>
                         <tbody id="records-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="3" class="py-8 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
+                            <tr><td colspan="3" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -110,21 +106,20 @@
 
             <!-- Tab 2: คำร้องขออนุมัติ -->
             <div id="content-requests" class="hidden">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">จัดการคำร้อง</h2>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border rounded-lg overflow-hidden">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">วันที่ส่ง</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">ประเภท / วันที่ต้องการ</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">เหตุผล</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-semibold text-gray-700">สถานะ</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-semibold text-gray-700">จัดการ</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">วันที่ส่ง</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ประเภท / วันที่</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">เหตุผล</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">สถานะ</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="requests-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="6" class="py-8 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
+                            <tr><td colspan="6" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -132,26 +127,26 @@
 
             <!-- Tab 3: จัดการพนักงาน -->
             <div id="content-employees" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-800">รายชื่อพนักงานในระบบ</h2>
-                    <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg shadow transition flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                        </svg>
-                        เพิ่มพนักงาน
+                <div class="flex justify-between items-center mb-4 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    <p class="text-sm text-yellow-800">
+                        <span class="font-bold">คำแนะนำ:</span> เนื่องจากแอปพนักงานเปลี่ยนมาใช้ <span class="font-bold underline">ระบบล็อคอินด้วยรหัส PIN (ไม่ต้องเลือกชื่อ)</span> กรุณาตรวจสอบให้แน่ใจว่าพนักงานทุกคนมีรหัส PIN 4 หลัก และไม่ซ้ำกัน
+                    </p>
+                    <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg shadow-md transition flex items-center font-bold whitespace-nowrap ml-4">
+                        + เพิ่มพนักงาน
                     </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border rounded-lg overflow-hidden">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">ชื่อ-นามสกุล</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-700">ตำแหน่ง</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-semibold text-gray-700">จัดการ</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อ-นามสกุล</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ตำแหน่ง</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">รหัส PIN</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="employees-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="3" class="py-8 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
+                            <tr><td colspan="4" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -166,7 +161,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Your Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBHuZGyY1F3v4rCrhrpt9YB90C0Ahh-stE",
             authDomain: "my-company-time-tracking.firebaseapp.com",
@@ -181,23 +175,17 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Helper สำหรับจัดการ Path
         const isCanvas = typeof __app_id !== 'undefined';
         const canvasAppId = isCanvas ? __app_id : 'default-id';
         const getPath = (colName) => isCanvas ? `artifacts/${canvasAppId}/public/data/${colName}` : colName;
 
         let currentUser = null;
-        let unsubscribeRecords = null;
-        let unsubscribeRequests = null;
-        let unsubscribeEmployees = null;
+        let employeesDataGlobal = []; // เก็บไว้สำหรับเช็ค PIN ซ้ำ
 
-        // --- UI Functions ---
-        
-        // Show Current Date
+        // UI Date
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('th-TH', options);
 
-        // Custom Message Box
         window.showMessage = function(msg, isError = false) {
             const box = document.getElementById('message-box');
             const text = document.getElementById('message-text');
@@ -207,7 +195,6 @@
             setTimeout(() => { box.classList.add('hidden'); }, 3000);
         };
 
-        // Tab Switching
         window.switchTab = function(tabName) {
             ['records', 'requests', 'employees'].forEach(name => {
                 document.getElementById(`content-${name}`).classList.add('hidden');
@@ -217,38 +204,31 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
         };
 
-        // Modals Management
         window.closeModal = function(modalId) {
             document.getElementById(modalId).classList.add('hidden');
         };
 
-        window.openEmpModal = function(id = '', name = '', position = '') {
+        window.openEmpModal = function(id = '', name = '', position = '', pin = '') {
             document.getElementById('emp-id').value = id;
             document.getElementById('emp-name').value = name;
             document.getElementById('emp-position').value = position;
+            document.getElementById('emp-pin').value = pin; 
             document.getElementById('emp-modal-title').textContent = id ? 'แก้ไขข้อมูลพนักงาน' : 'เพิ่มพนักงานใหม่';
             document.getElementById('emp-modal').classList.remove('hidden');
-            document.getElementById('emp-name').focus();
         };
 
         window.openDeleteModal = function(id, collection, displayMsg) {
             document.getElementById('delete-id').value = id;
             document.getElementById('delete-collection').value = collection;
-            document.getElementById('delete-message').textContent = `คุณต้องการลบ "${displayMsg}" ใช่หรือไม่?`;
+            document.getElementById('delete-message').innerHTML = `ลบข้อมูลของ <b>"${displayMsg}"</b> ใช่หรือไม่?`;
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
-        // Formatting Helper
         const formatDate = (timestamp) => {
             if (!timestamp) return 'กำลังประมวลผล...';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleString('th-TH', { 
-                day: '2-digit', month: 'short', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
+            return date.toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         };
-
-        // --- Auth & Data Loading ---
 
         async function initAuth() {
             try {
@@ -259,8 +239,6 @@
                 }
             } catch (error) {
                 console.error("Auth error:", error);
-                document.getElementById('status').textContent = "❌ เชื่อมต่อล้มเหลว";
-                document.getElementById('status').classList.add("text-red-500");
             }
         }
 
@@ -278,172 +256,131 @@
         function loadAllData() {
             if (!currentUser) return;
             
-            // 1. Load Records
-            if(unsubscribeRecords) unsubscribeRecords();
-            unsubscribeRecords = onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
+            // 1. Records
+            onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
                 let records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Sort client side (Rule 2)
                 records.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                
                 const tbody = document.getElementById('records-body');
-                if (records.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-gray-500">ไม่มีข้อมูลการลงเวลา</td></tr>';
-                    return;
-                }
+                if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
                 
                 tbody.innerHTML = records.map(record => `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(record.timestamp)}</td>
-                        <td class="py-3 px-4 border-b font-medium text-gray-800">${record.name}</td>
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 border-b text-sm">${formatDate(record.timestamp)}</td>
+                        <td class="py-3 px-4 border-b font-bold text-gray-800">${record.name}</td>
                         <td class="py-3 px-4 border-b text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${record.type === 'เข้างาน' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                ${record.type}
-                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${record.type}</span>
                         </td>
                     </tr>
                 `).join('');
-            }, (error) => console.error(error));
+            }, console.error);
 
-            // 2. Load Requests
-            if(unsubscribeRequests) unsubscribeRequests();
-            unsubscribeRequests = onSnapshot(collection(db, getPath('requests')), (snapshot) => {
+            // 2. Requests
+            onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 let requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 requests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 
                 let pendingCount = 0;
                 const tbody = document.getElementById('requests-body');
                 
-                if (requests.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500">ไม่มีคำร้องในระบบ</td></tr>';
-                } else {
-                    tbody.innerHTML = requests.map(req => {
-                        if (req.status === 'รออนุมัติ') pendingCount++;
-                        
-                        let statusColor = 'bg-yellow-100 text-yellow-800';
-                        if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-green-100 text-green-800';
-                        if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-red-100 text-red-800';
-
-                        return `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(req.timestamp).split(' ')[0]}</td>
-                            <td class="py-3 px-4 border-b font-medium text-gray-800">${req.name}</td>
-                            <td class="py-3 px-4 border-b text-sm">
-                                <span class="font-semibold text-blue-600">${req.type}</span><br>
-                                <span class="text-xs text-gray-500">สำหรับวันที่: ${req.date}</span>
-                            </td>
-                            <td class="py-3 px-4 border-b text-sm text-gray-600 max-w-xs truncate" title="${req.reason}">${req.reason}</td>
-                            <td class="py-3 px-4 border-b text-center">
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusColor}">${req.status}</span>
-                            </td>
-                            <td class="py-3 px-4 border-b text-center space-x-1">
-                                ${req.status === 'รออนุมัติ' ? `
-                                    <button onclick="updateRequestStatus('${req.id}', 'อนุมัติแล้ว')" class="text-xs bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded">อนุมัติ</button>
-                                    <button onclick="updateRequestStatus('${req.id}', 'ไม่อนุมัติ')" class="text-xs bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded">ไม่อนุมัติ</button>
-                                ` : `
-                                    <button onclick="openDeleteModal('${req.id}', 'requests', 'คำร้องของ ${req.name}')" class="text-xs text-red-500 hover:text-red-700 underline">ลบ</button>
-                                `}
-                            </td>
-                        </tr>
-                        `;
-                    }).join('');
-                }
-
-                // Update Notification Badge
-                const badge = document.getElementById('badge-requests');
-                if (pendingCount > 0) {
-                    badge.textContent = pendingCount;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }, (error) => console.error(error));
-
-            // 3. Load Employees
-            if(unsubscribeEmployees) unsubscribeEmployees();
-            unsubscribeEmployees = onSnapshot(collection(db, getPath('employees')), (snapshot) => {
-                let employees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                employees.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+                if (requests.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500">ไม่มีคำร้อง</td></tr>';
                 
-                const tbody = document.getElementById('employees-body');
-                if (employees.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-gray-500">ยังไม่มีรายชื่อพนักงานในระบบ</td></tr>';
-                    return;
-                }
-                
-                tbody.innerHTML = employees.map(emp => `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 border-b font-medium text-gray-800">${emp.name}</td>
-                        <td class="py-3 px-4 border-b text-sm text-gray-600">${emp.position || '-'}</td>
-                        <td class="py-3 px-4 border-b text-center space-x-2">
-                            <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}')" class="text-sm text-blue-600 hover:text-blue-800">แก้ไข</button>
-                            <span class="text-gray-300">|</span>
-                            <button onclick="openDeleteModal('${emp.id}', 'employees', 'พนักงาน ${emp.name}')" class="text-sm text-red-600 hover:text-red-800">ลบ</button>
+                tbody.innerHTML = requests.map(req => {
+                    if (req.status === 'รออนุมัติ') pendingCount++;
+                    let statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                    if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                    if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-800 border-rose-200';
+
+                    return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(req.timestamp).split(' ')[0]}</td>
+                        <td class="py-3 px-4 border-b font-bold text-gray-800">${req.name}</td>
+                        <td class="py-3 px-4 border-b text-sm"><span class="font-bold text-blue-600">${req.type}</span><br><span class="text-xs text-gray-500">${req.date}</span></td>
+                        <td class="py-3 px-4 border-b text-sm max-w-xs truncate" title="${req.reason}">${req.reason}</td>
+                        <td class="py-3 px-4 border-b text-center"><span class="px-3 py-1 rounded-md text-xs font-bold border ${statusColor}">${req.status}</span></td>
+                        <td class="py-3 px-4 border-b text-center">
+                            ${req.status === 'รออนุมัติ' ? `
+                                <button onclick="updateRequestStatus('${req.id}', 'อนุมัติแล้ว')" class="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white py-1 px-2 rounded shadow mb-1 w-full transition">อนุมัติ</button>
+                                <button onclick="updateRequestStatus('${req.id}', 'ไม่อนุมัติ')" class="text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white py-1 px-2 rounded shadow w-full transition">ไม่อนุมัติ</button>
+                            ` : `<button onclick="openDeleteModal('${req.id}', 'requests', 'คำร้องของ ${req.name}')" class="text-xs font-bold text-gray-400 hover:text-rose-600 transition underline">ลบข้อมูล</button>`}
                         </td>
                     </tr>
-                `).join('');
-            }, (error) => console.error(error));
+                    `;
+                }).join('');
+
+                const badge = document.getElementById('badge-requests');
+                if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); } 
+                else { badge.classList.add('hidden'); }
+            }, console.error);
+
+            // 3. Employees
+            onSnapshot(collection(db, getPath('employees')), (snapshot) => {
+                employeesDataGlobal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                employeesDataGlobal.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+                
+                const tbody = document.getElementById('employees-body');
+                if (employeesDataGlobal.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
+                
+                tbody.innerHTML = employeesDataGlobal.map(emp => {
+                    const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; // ซ่อน PIN เพื่อความปลอดภัย (ตอนแก้ไขค่อยแสดง)
+                    return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-600">${emp.position || '-'}</td>
+                        <td class="py-3 px-4 border-b text-center text-lg font-mono tracking-widest font-bold text-blue-600">${pinDisplay}</td>
+                        <td class="py-3 px-4 border-b text-center space-x-2">
+                            <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}')" class="text-sm font-bold text-blue-600 hover:text-blue-800">แก้ไข</button>
+                            <span class="text-gray-300">|</span>
+                            <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}')" class="text-sm font-bold text-rose-500 hover:text-rose-700">ลบ</button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            }, console.error);
         }
 
-        // --- Action Functions ---
-
-        // Request Approval
         window.updateRequestStatus = async function(docId, newStatus) {
             try {
-                const reqRef = doc(db, getPath('requests'), docId);
-                await updateDoc(reqRef, { status: newStatus });
-                showMessage(`เปลี่ยนสถานะเป็น "${newStatus}" สำเร็จ`);
-            } catch (error) {
-                console.error("Error updating document: ", error);
-                showMessage("เกิดข้อผิดพลาด กรุณาลองใหม่", true);
-            }
+                await updateDoc(doc(db, getPath('requests'), docId), { status: newStatus });
+                showMessage(`เปลี่ยนสถานะสำเร็จ`);
+            } catch (error) { showMessage("เกิดข้อผิดพลาด", true); }
         };
 
-        // Employee Management (Save Add/Edit)
         window.saveEmployee = async function() {
             const id = document.getElementById('emp-id').value;
             const name = document.getElementById('emp-name').value.trim();
             const position = document.getElementById('emp-position').value.trim();
+            let pin = document.getElementById('emp-pin').value.trim();
 
-            if (!name) {
-                showMessage("กรุณาระบุชื่อพนักงาน", true);
-                return;
+            if (!name) return showMessage("กรุณาระบุชื่อพนักงาน", true);
+            if (!pin || pin.length < 4) return showMessage("กรุณากำหนดรหัส PIN 4 หลัก", true);
+
+            // เช็คว่า PIN ซ้ำกับพนักงานคนอื่นหรือไม่ (โดยไม่เช็คกับตัวเองตอนแก้ไข)
+            const duplicatePin = employeesDataGlobal.find(e => e.pin === pin && e.id !== id);
+            if (duplicatePin) {
+                return showMessage(`รหัส PIN นึ้ถูกใช้โดยคุณ "${duplicatePin.name}" แล้ว กรุณาเปลี่ยนใหม่`, true);
             }
 
             try {
                 if (id) {
-                    // Update
-                    await updateDoc(doc(db, getPath('employees'), id), { name, position });
-                    showMessage("แก้ไขข้อมูลพนักงานสำเร็จ");
+                    await updateDoc(doc(db, getPath('employees'), id), { name, position, pin });
+                    showMessage("แก้ไขข้อมูลสำเร็จ");
                 } else {
-                    // Add
-                    await addDoc(collection(db, getPath('employees')), { name, position });
-                    showMessage("เพิ่มพนักงานใหม่สำเร็จ");
+                    await addDoc(collection(db, getPath('employees')), { name, position, pin });
+                    showMessage("เพิ่มพนักงานสำเร็จ");
                 }
                 closeModal('emp-modal');
-            } catch (error) {
-                console.error("Error saving employee: ", error);
-                showMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
-            }
+            } catch (error) { showMessage("บันทึกข้อมูลล้มเหลว", true); }
         };
 
-        // Universal Delete Function
         window.executeDelete = async function() {
             const id = document.getElementById('delete-id').value;
             const collectionName = document.getElementById('delete-collection').value;
-            
             try {
                 await deleteDoc(doc(db, getPath(collectionName), id));
                 showMessage("ลบข้อมูลสำเร็จ");
                 closeModal('delete-modal');
-            } catch (error) {
-                console.error("Error deleting doc: ", error);
-                showMessage("ลบข้อมูลล้มเหลว", true);
-            }
+            } catch (error) { showMessage("ลบข้อมูลล้มเหลว", true); }
         };
-
-        // Expose loadRecords for manual refresh button
-        window.loadRecords = loadAllData;
-
     </script>
 </body>
 </html>
