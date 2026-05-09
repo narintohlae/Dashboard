@@ -56,6 +56,7 @@
             <p id="delete-message" class="mb-6 text-sm text-gray-500">คุณแน่ใจหรือไม่?</p>
             <input type="hidden" id="delete-id">
             <input type="hidden" id="delete-collection">
+            <input type="hidden" id="delete-name">
             <div class="flex justify-center space-x-3">
                 <button onclick="closeModal('delete-modal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg w-full font-medium">ยกเลิก</button>
                 <button onclick="executeDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg w-full font-medium shadow">ลบข้อมูล</button>
@@ -159,7 +160,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBHuZGyY1F3v4rCrhrpt9YB90C0Ahh-stE",
@@ -217,10 +218,17 @@
             document.getElementById('emp-modal').classList.remove('hidden');
         };
 
-        window.openDeleteModal = function(id, collection, displayMsg) {
+        window.openDeleteModal = function(id, collection, displayMsg, empName = '') {
             document.getElementById('delete-id').value = id;
             document.getElementById('delete-collection').value = collection;
-            document.getElementById('delete-message').innerHTML = `ลบข้อมูลของ <b>"${displayMsg}"</b> ใช่หรือไม่?`;
+            document.getElementById('delete-name').value = empName;
+            
+            let extraWarning = '';
+            if(collection === 'employees') {
+                extraWarning = '<br><span class="text-rose-500 text-xs font-bold mt-2 block">⚠️ ประวัติลงเวลาและคำร้องของพนักงานคนนี้จะถูกลบทั้งหมดด้วย</span>';
+            }
+            
+            document.getElementById('delete-message').innerHTML = `ลบข้อมูลของ <b>"${displayMsg}"</b> ใช่หรือไม่? ${extraWarning}`;
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
@@ -343,7 +351,7 @@
                         <td class="py-3 px-4 border-b text-center space-x-2">
                             <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}')" class="text-sm font-bold text-blue-600 hover:text-blue-800">แก้ไข</button>
                             <span class="text-gray-300">|</span>
-                            <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}')" class="text-sm font-bold text-rose-500 hover:text-rose-700">ลบ</button>
+                            <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="text-sm font-bold text-rose-500 hover:text-rose-700">ลบ</button>
                         </td>
                     </tr>
                     `;
@@ -387,11 +395,31 @@
         window.executeDelete = async function() {
             const id = document.getElementById('delete-id').value;
             const collectionName = document.getElementById('delete-collection').value;
+            const empName = document.getElementById('delete-name').value;
+            
             try {
+                // ลบข้อมูลหลัก
                 await deleteDoc(doc(db, getPath(collectionName), id));
+                
+                // ถ้าลบพนักงาน ให้ลบประวัติทั้งหมดที่เกี่ยวกับพนักงานคนนี้ด้วย (Cascading Delete)
+                if (collectionName === 'employees' && empName) {
+                    // ลบประวัติลงเวลา
+                    const qTime = query(collection(db, getPath('time_records')), where('name', '==', empName));
+                    const timeSnap = await getDocs(qTime);
+                    timeSnap.forEach(async (d) => { await deleteDoc(doc(db, getPath('time_records'), d.id)); });
+
+                    // ลบประวัติคำร้อง
+                    const qReq = query(collection(db, getPath('requests')), where('name', '==', empName));
+                    const reqSnap = await getDocs(qReq);
+                    reqSnap.forEach(async (d) => { await deleteDoc(doc(db, getPath('requests'), d.id)); });
+                }
+
                 showMessage("ลบข้อมูลสำเร็จ");
                 closeModal('delete-modal');
-            } catch (error) { showMessage("ลบข้อมูลล้มเหลว", true); }
+            } catch (error) { 
+                console.error(error);
+                showMessage("ลบข้อมูลล้มเหลว", true); 
+            }
         };
     </script>
 </body>
