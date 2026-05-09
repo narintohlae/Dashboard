@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
-        .tab-btn { border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn { border-bottom: 3px solid transparent; }
         .tab-btn.active { border-bottom-color: #3b82f6; color: #1d4ed8; font-weight: 700; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -19,7 +19,7 @@
 <body class="min-h-screen p-4 md:p-8">
 
     <!-- Message Box -->
-    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-2xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
+    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
         <p id="message-text" class="text-gray-800 font-medium"></p>
     </div>
 
@@ -45,6 +45,7 @@
                     <p class="text-xs text-blue-600 mt-2 font-medium">⚠️ รหัส 4 หลัก ห้ามซ้ำกับพนักงานคนอื่น</p>
                 </div>
 
+                <!-- ส่วนตั้งค่าเงินเดือนและ OT -->
                 <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                     <h4 class="font-bold text-emerald-800 mb-3 border-b border-emerald-200 pb-2">ตั้งค่าเงินเดือน & OT</h4>
                     
@@ -71,6 +72,7 @@
                     <div>
                         <label class="block text-xs font-bold text-emerald-800 mb-1">ค่า OT / ชั่วโมง (บาท)</label>
                         <input type="number" id="emp-ot-rate" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700" placeholder="เช่น 50">
+                        <p class="text-xs text-emerald-600 mt-2 font-medium">ระบบจะคิด OT เมื่อพนักงานกดออกงานหลังเวลา 18:00 น.</p>
                     </div>
                 </div>
             </div>
@@ -139,33 +141,22 @@
             </div>
         </div>
 
-        <!-- NEW: Live Store Status -->
-        <div class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
-                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                <h3 class="font-bold text-gray-800">สถานะร้านวันนี้ (Live)</h3>
-            </div>
-            <div id="live-status-container" class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div class="text-gray-400 text-sm">กำลังโหลดสถานะพนักงาน...</div>
-            </div>
-        </div>
-
         <!-- Navigation Tabs -->
         <div class="bg-white rounded-t-2xl border-b flex overflow-x-auto hide-scrollbar">
-            <button onclick="switchTab('records')" id="tab-records" class="tab-btn active px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1 hover:bg-gray-50">ประวัติลงเวลา</button>
-            <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1 hover:bg-gray-50">
+            <button onclick="switchTab('records')" id="tab-records" class="tab-btn active px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1">ประวัติลงเวลา</button>
+            <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1">
                 คำร้องต่างๆ
                 <span id="badge-requests" class="hidden ml-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
             </button>
-            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1 hover:bg-gray-50">พนักงาน & PIN</button>
-            <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-6 py-4 text-emerald-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1 bg-emerald-50/30 hover:bg-emerald-50/50 rounded-tr-2xl">
+            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1">พนักงาน & PIN</button>
+            <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-6 py-4 text-emerald-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1 bg-emerald-50/50 rounded-tr-2xl">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 สรุปเงินเดือน
             </button>
         </div>
 
         <!-- Content Area -->
-        <div class="bg-white p-6 rounded-b-2xl shadow-sm min-h-[500px] border border-t-0 border-gray-100">
+        <div class="bg-white p-6 rounded-b-2xl shadow-sm min-h-[600px] border border-t-0 border-gray-100">
             
             <!-- Tab 1: Records -->
             <div id="content-records" class="block fade-in">
@@ -235,7 +226,7 @@
                 </div>
             </div>
 
-            <!-- Tab 4: สรุปเงินเดือน (Auto Calculate) -->
+            <!-- Tab 4: สรุปเงินเดือน (Payroll) -->
             <div id="content-payroll" class="hidden fade-in">
                 <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-100 mb-6 flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
                     <div class="w-full md:w-auto">
@@ -271,7 +262,7 @@
                             </tr>
                         </thead>
                         <tbody id="payroll-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="6" class="py-12 text-center text-gray-500">กำลังประมวลผล...</td></tr>
+                            <tr><td colspan="6" class="py-12 text-center text-gray-500">กรุณาเลือกวันที่เพื่อดูสรุป</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -307,7 +298,6 @@
         let currentUser = null;
         let employeesDataGlobal = []; 
         let allTimeRecordsGlobal = []; 
-        let allRequestsGlobal = [];
         
         const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
 
@@ -372,10 +362,13 @@
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
+        // แก้ปัญหาการตัด string ด้วยช่องว่างในมือถือ โดยการดึง date และ time ออกมาต่อกันให้เป็นระเบียบ
         const formatDate = (timestamp) => {
             if (!timestamp) return '...';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+            const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            return `${dateStr} | ${timeStr} น.`;
         };
         const formatDisplayDate = (dateString) => {
             if (!dateString) return '';
@@ -412,19 +405,81 @@
                 allTimeRecordsGlobal = records; 
                 records.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 
-                renderRecordsTable(records);
-                updateLiveStatus(); // อัปเดตแผงสถานะร้านสด
-                if(!document.getElementById('content-payroll').classList.contains('hidden')) calculatePayroll();
+                const tbody = document.getElementById('records-body');
+                if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
+                
+                tbody.innerHTML = records.map(record => {
+                    let isoDateTime = '';
+                    if (record.timestamp) {
+                        const d = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
+                        const tzOffset = d.getTimezoneOffset() * 60000;
+                        const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0,-1);
+                        isoDateTime = localISOTime.substring(0, 16); 
+                    }
+
+                    // แก้ไข: เอา opacity-0 ออก ให้ปุ่มโชว์ตลอด เพื่อให้กดง่ายในมือถือ
+                    return `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="py-3 px-4 border-b text-sm">${formatDate(record.timestamp)}</td>
+                        <td class="py-3 px-4 border-b font-bold text-gray-800">${record.name}</td>
+                        <td class="py-3 px-4 border-b text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${record.type}</span>
+                        </td>
+                        <td class="py-3 px-4 border-b text-center">
+                            <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                                <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${isoDateTime}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg transition-colors w-full sm:w-auto">แก้ไขเวลา</button>
+                                <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลาของ ${record.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg transition-colors w-full sm:w-auto">ลบ</button>
+                            </div>
+                        </td>
+                    </tr>
+                `}).join('');
             }, console.error);
 
             // 2. Requests
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 let requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                allRequestsGlobal = requests;
                 requests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 
-                renderRequestsTable(requests);
-                updateLiveStatus(); // อัปเดตแผงสถานะร้านสดเผื่อมีคนลา
+                let pendingCount = 0;
+                const tbody = document.getElementById('requests-body');
+                
+                if (requests.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-gray-500">ยังไม่มีคำร้อง</td></tr>';
+                
+                tbody.innerHTML = requests.map(req => {
+                    if (req.status === 'รออนุมัติ') pendingCount++;
+                    let statusColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                    if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                    if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-800 border-rose-200';
+
+                    let typeDisplay = `<span class="font-bold text-blue-600">${req.type}</span>`;
+                    let dateDisplay = `<span class="text-xs text-gray-500 font-bold">หยุด: ${formatDisplayDate(req.date)}</span>`;
+                    if (req.type === 'สลับวันหยุด' && req.swapDate) {
+                        dateDisplay += `<br><span class="text-xs text-emerald-600 font-bold">มาแทน: ${formatDisplayDate(req.swapDate)}</span>`;
+                    }
+                    
+                    const reqDObj = req.timestamp ? (req.timestamp.toDate ? req.timestamp.toDate() : new Date(req.timestamp)) : new Date();
+                    const reqDateStr = reqDObj.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+
+                    return `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="py-3 px-4 border-b text-sm text-gray-600">${reqDateStr}</td>
+                        <td class="py-3 px-4 border-b font-bold text-gray-800">${req.name}</td>
+                        <td class="py-3 px-4 border-b text-sm">${typeDisplay}<br>${dateDisplay}</td>
+                        <td class="py-3 px-4 border-b text-sm max-w-xs truncate" title="${req.reason}">${req.reason}</td>
+                        <td class="py-3 px-4 border-b text-center"><span class="px-3 py-1 rounded-md text-xs font-bold border ${statusColor}">${req.status}</span></td>
+                        <td class="py-3 px-4 border-b text-center">
+                            ${req.status === 'รออนุมัติ' ? `
+                                <button onclick="updateRequestStatus('${req.id}', 'อนุมัติแล้ว')" class="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-3 rounded-lg shadow mb-1 w-full transition">อนุมัติ</button>
+                                <button onclick="updateRequestStatus('${req.id}', 'ไม่อนุมัติ')" class="text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white py-1.5 px-3 rounded-lg shadow w-full transition">ไม่อนุมัติ</button>
+                            ` : `<button onclick="openDeleteModal('${req.id}', 'requests', 'คำร้องของ ${req.name}')" class="text-xs font-bold text-gray-400 hover:text-rose-600 transition underline">ลบข้อมูล</button>`}
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+
+                const badge = document.getElementById('badge-requests');
+                if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); } 
+                else { badge.classList.add('hidden'); }
             }, console.error);
 
             // 3. Employees
@@ -432,176 +487,33 @@
                 employeesDataGlobal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 employeesDataGlobal.sort((a, b) => a.name.localeCompare(b.name, 'th'));
                 
-                renderEmployeesTable(employeesDataGlobal);
-                updateLiveStatus(); // วาดแผงสถานะใหม่เมื่อพนักงานเปลี่ยน
-                if(!document.getElementById('content-payroll').classList.contains('hidden')) calculatePayroll();
+                const tbody = document.getElementById('employees-body');
+                if (employeesDataGlobal.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
+                
+                tbody.innerHTML = employeesDataGlobal.map(emp => {
+                    const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; 
+                    const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
+                    const otDisplay = emp.otRate ? `OT: ฿${parseFloat(emp.otRate)}/ชม.` : '-';
+                    const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
+
+                    return `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}<br><span class="text-xs text-gray-400 font-normal">${emp.position || 'พนักงาน'}</span></td>
+                        <td class="py-3 px-4 border-b text-center text-sm">
+                            <span class="text-emerald-600 font-bold block">${wageDisplay} <span class="text-amber-600 text-xs ml-1">(${otDisplay})</span></span>
+                            <span class="text-xs text-gray-500">หยุด: ${offDisplay}</span>
+                        </td>
+                        <td class="py-3 px-4 border-b text-center text-lg font-mono tracking-widest font-bold text-blue-600">${pinDisplay}</td>
+                        <td class="py-3 px-4 border-b text-center">
+                            <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                                <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}', '${emp.wage || ''}', '${emp.dayOff || ''}', '${emp.otRate || ''}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg w-full sm:w-auto">แก้ไข</button>
+                                <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg w-full sm:w-auto">ลบ</button>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
             }, console.error);
-        }
-
-        // --- Render Functions ---
-        function renderRecordsTable(records) {
-            const tbody = document.getElementById('records-body');
-            if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
-            
-            tbody.innerHTML = records.map(record => {
-                let isoDateTime = '';
-                if (record.timestamp) {
-                    const d = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
-                    const tzOffset = d.getTimezoneOffset() * 60000;
-                    const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0,-1);
-                    isoDateTime = localISOTime.substring(0, 16); 
-                }
-
-                return `
-                <tr class="hover:bg-gray-50 transition group">
-                    <td class="py-3 px-4 border-b text-sm">${formatDate(record.timestamp)}</td>
-                    <td class="py-3 px-4 border-b font-bold text-gray-800">${record.name}</td>
-                    <td class="py-3 px-4 border-b text-center">
-                        <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${record.type}</span>
-                    </td>
-                    <td class="py-3 px-4 border-b text-center space-x-2">
-                        <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${isoDateTime}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">แก้ไขเวลา</button>
-                        <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลาของ ${record.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">ลบ</button>
-                    </td>
-                </tr>
-            `}).join('');
-        }
-
-        function renderRequestsTable(requests) {
-            let pendingCount = 0;
-            const tbody = document.getElementById('requests-body');
-            
-            if (requests.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-gray-500">ยังไม่มีคำร้อง</td></tr>';
-            
-            tbody.innerHTML = requests.map(req => {
-                if (req.status === 'รออนุมัติ') pendingCount++;
-                let statusColor = 'bg-amber-100 text-amber-800 border-amber-200';
-                if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-800 border-rose-200';
-
-                let typeDisplay = `<span class="font-bold text-blue-600">${req.type}</span>`;
-                let dateDisplay = `<span class="text-xs text-gray-500 font-bold">หยุด: ${formatDisplayDate(req.date)}</span>`;
-                if (req.type === 'สลับวันหยุด' && req.swapDate) {
-                    dateDisplay += `<br><span class="text-xs text-emerald-600 font-bold">มาแทน: ${formatDisplayDate(req.swapDate)}</span>`;
-                }
-
-                return `
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(req.timestamp).split(' ')[0]}</td>
-                    <td class="py-3 px-4 border-b font-bold text-gray-800">${req.name}</td>
-                    <td class="py-3 px-4 border-b text-sm">${typeDisplay}<br>${dateDisplay}</td>
-                    <td class="py-3 px-4 border-b text-sm max-w-xs truncate" title="${req.reason}">${req.reason}</td>
-                    <td class="py-3 px-4 border-b text-center"><span class="px-3 py-1 rounded-md text-xs font-bold border ${statusColor}">${req.status}</span></td>
-                    <td class="py-3 px-4 border-b text-center">
-                        ${req.status === 'รออนุมัติ' ? `
-                            <button onclick="updateRequestStatus('${req.id}', 'อนุมัติแล้ว')" class="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-3 rounded-lg shadow mb-1 w-full transition">อนุมัติ</button>
-                            <button onclick="updateRequestStatus('${req.id}', 'ไม่อนุมัติ')" class="text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white py-1.5 px-3 rounded-lg shadow w-full transition">ไม่อนุมัติ</button>
-                        ` : `<button onclick="openDeleteModal('${req.id}', 'requests', 'คำร้องของ ${req.name}')" class="text-xs font-bold text-gray-400 hover:text-rose-600 transition underline">ลบข้อมูล</button>`}
-                    </td>
-                </tr>
-                `;
-            }).join('');
-
-            const badge = document.getElementById('badge-requests');
-            if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); } 
-            else { badge.classList.add('hidden'); }
-        }
-
-        function renderEmployeesTable(employees) {
-            const tbody = document.getElementById('employees-body');
-            if (employees.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
-            
-            tbody.innerHTML = employees.map(emp => {
-                const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; 
-                const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
-                const otDisplay = emp.otRate ? `OT: ฿${parseFloat(emp.otRate)}/ชม.` : '-';
-                const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
-
-                return `
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}<br><span class="text-xs text-gray-400 font-normal">${emp.position || 'พนักงาน'}</span></td>
-                    <td class="py-3 px-4 border-b text-center text-sm">
-                        <span class="text-emerald-600 font-bold block">${wageDisplay} <span class="text-amber-600 text-xs ml-1">(${otDisplay})</span></span>
-                        <span class="text-xs text-gray-500">หยุด: ${offDisplay}</span>
-                    </td>
-                    <td class="py-3 px-4 border-b text-center text-lg font-mono tracking-widest font-bold text-blue-600">${pinDisplay}</td>
-                    <td class="py-3 px-4 border-b text-center space-x-2">
-                        <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}', '${emp.wage || ''}', '${emp.dayOff || ''}', '${emp.otRate || ''}')" class="text-sm font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1 px-3 rounded-lg">แก้ไข</button>
-                        <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="text-sm font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1 px-3 rounded-lg">ลบ</button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        // --- NEW: แผงสถานะร้านสด (Live Store Status) ---
-        function updateLiveStatus() {
-            const container = document.getElementById('live-status-container');
-            if(employeesDataGlobal.length === 0) {
-                container.innerHTML = '<div class="text-gray-400 text-sm">ยังไม่มีพนักงานในระบบ</div>';
-                return;
-            }
-
-            const todayStrTh = new Date().toLocaleDateString('th-TH'); // สำหรับเทียบ log เข้างาน
-            const todayStrIso = new Date().toISOString().split('T')[0]; // สำหรับเทียบวันลา YYYY-MM-DD
-
-            const html = employeesDataGlobal.map(emp => {
-                let statusBadge = '';
-                let statusText = '';
-                let bgStyle = 'bg-white border-gray-200';
-
-                // 1. เช็คว่าวันนี้ลาหยุดหรือไม่ (ที่อนุมัติแล้ว)
-                const isLeaveToday = allRequestsGlobal.find(req => 
-                    req.name === emp.name && 
-                    req.status === 'อนุมัติแล้ว' && 
-                    req.date === todayStrIso
-                );
-
-                if(isLeaveToday) {
-                    statusBadge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-bold">ลาหยุด</span>`;
-                    statusText = `<span class="text-xs text-gray-500">${isLeaveToday.type}</span>`;
-                    bgStyle = 'bg-amber-50/50 border-amber-200';
-                } else {
-                    // 2. ถ้าไม่ได้ลา ให้เช็คสถานะลงเวลาล่าสุดของวันนี้
-                    const todayLogs = allTimeRecordsGlobal.filter(r => {
-                        if (r.name !== emp.name || !r.timestamp) return false;
-                        const recDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-                        return recDate.toLocaleDateString('th-TH') === todayStrTh;
-                    });
-
-                    if(todayLogs.length === 0) {
-                        statusBadge = `<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold">ยังไม่เข้างาน</span>`;
-                        statusText = `<span class="text-xs text-gray-400">-</span>`;
-                    } else {
-                        const latest = todayLogs[0];
-                        const tObj = latest.timestamp.toDate ? latest.timestamp.toDate() : new Date(latest.timestamp);
-                        const timeStr = tObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-
-                        if(latest.type === 'เข้างาน') {
-                            statusBadge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs font-bold">เข้างานแล้ว</span>`;
-                            statusText = `<span class="text-xs font-bold text-emerald-600">${timeStr} น.</span>`;
-                            bgStyle = 'bg-emerald-50/50 border-emerald-200 shadow-sm';
-                        } else {
-                            statusBadge = `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-xs font-bold">ออกงานแล้ว</span>`;
-                            statusText = `<span class="text-xs text-rose-500">${timeStr} น.</span>`;
-                        }
-                    }
-                }
-
-                return `
-                <div class="border ${bgStyle} p-4 rounded-xl flex items-center justify-between transition-all">
-                    <div>
-                        <p class="font-bold text-gray-800 text-sm">${emp.name}</p>
-                        <p class="mt-1">${statusBadge}</p>
-                    </div>
-                    <div class="text-right">
-                        ${statusText}
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            container.innerHTML = html;
         }
 
         // --- ระบบคำนวณเงินเดือน & OT (PAYROLL) ---
@@ -725,6 +637,7 @@
                     showMessage("เพิ่มพนักงานสำเร็จ");
                 }
                 closeModal('emp-modal');
+                // เอาการโหลดซ้ำออก เพราะ onSnapshot จะ trigger ให้ loadAllData ใหม่อยู่แล้ว
             } catch (error) { showMessage("บันทึกข้อมูลล้มเหลว", true); }
         };
 
