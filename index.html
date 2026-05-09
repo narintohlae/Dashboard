@@ -44,26 +44,6 @@
         </div>
     </div>
 
-    <!-- Delete Confirm Modal -->
-    <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 px-4">
-        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-            </div>
-            <h3 class="text-lg font-bold mb-2 text-gray-900">ยืนยันการลบข้อมูล</h3>
-            <p id="delete-message" class="mb-6 text-sm text-gray-500">คุณแน่ใจหรือไม่?</p>
-            <input type="hidden" id="delete-id">
-            <input type="hidden" id="delete-collection">
-            <input type="hidden" id="delete-name">
-            <div class="flex justify-center space-x-3">
-                <button onclick="closeModal('delete-modal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg w-full font-medium">ยกเลิก</button>
-                <button onclick="executeDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg w-full font-medium shadow">ลบข้อมูล</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Edit Time Modal -->
     <div id="edit-time-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 px-4">
         <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm">
@@ -87,6 +67,26 @@
             <div class="flex justify-end space-x-3">
                 <button onclick="closeModal('edit-time-modal')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition">ยกเลิก</button>
                 <button onclick="saveTimeRecord()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow">บันทึกเวลา</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 px-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold mb-2 text-gray-900">ยืนยันการลบข้อมูล</h3>
+            <p id="delete-message" class="mb-6 text-sm text-gray-500">คุณแน่ใจหรือไม่?</p>
+            <input type="hidden" id="delete-id">
+            <input type="hidden" id="delete-collection">
+            <input type="hidden" id="delete-name">
+            <div class="flex justify-center space-x-3">
+                <button onclick="closeModal('delete-modal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg w-full font-medium">ยกเลิก</button>
+                <button onclick="executeDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg w-full font-medium shadow">ลบข้อมูล</button>
             </div>
         </div>
     </div>
@@ -133,6 +133,54 @@
                 </div>
             </div>
 
+            <!-- Tab 2: คำร้องขออนุมัติ (ส่วนที่หายไป) -->
+            <div id="content-requests" class="hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border rounded-lg overflow-hidden">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">วันที่ส่ง</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ประเภท / วันที่</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">เหตุผล</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">สถานะ</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-body" class="divide-y divide-gray-100">
+                            <tr><td colspan="6" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: จัดการพนักงาน (ส่วนที่หายไป) -->
+            <div id="content-employees" class="hidden">
+                <div class="flex justify-between items-center mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p class="text-sm text-blue-800">
+                        <span class="font-bold">ข้อมูลพนักงาน:</span> รหัส PIN ของพนักงานแต่ละคนต้องไม่ซ้ำกัน เพื่อใช้เข้าสู่ระบบบนมือถือของพวกเขาเอง
+                    </p>
+                    <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg shadow-md transition flex items-center font-bold whitespace-nowrap ml-4">
+                        + เพิ่มพนักงาน
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border rounded-lg overflow-hidden">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อ-นามสกุล</th>
+                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ตำแหน่ง</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">รหัส PIN</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employees-body" class="divide-y divide-gray-100">
+                            <tr><td colspan="4" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -161,7 +209,7 @@
         const getPath = (colName) => isCanvas ? `artifacts/${canvasAppId}/public/data/${colName}` : colName;
 
         let currentUser = null;
-        let employeesDataGlobal = []; // เก็บไว้สำหรับเช็ค PIN ซ้ำ
+        let employeesDataGlobal = [];
 
         // UI Date
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -266,7 +314,6 @@
                 if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
                 
                 tbody.innerHTML = records.map(record => {
-                    // แปลงเวลาให้พร้อมสำหรับ input datetime-local
                     const dateObj = record.timestamp?.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
                     const y = dateObj.getFullYear();
                     const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -404,7 +451,6 @@
             if (!datetimeVal) return showMessage("กรุณาระบุวันและเวลา", true);
 
             try {
-                // แปลงค่าจากช่องกรอกกลับเป็น Date Object เพื่ออัพเดทขึ้น Firebase
                 await updateDoc(doc(db, getPath('time_records'), id), { 
                     type: type,
                     timestamp: new Date(datetimeVal)
@@ -423,17 +469,13 @@
             const empName = document.getElementById('delete-name').value;
             
             try {
-                // ลบข้อมูลหลัก
                 await deleteDoc(doc(db, getPath(collectionName), id));
                 
-                // ถ้าลบพนักงาน ให้ลบประวัติทั้งหมดที่เกี่ยวกับพนักงานคนนี้ด้วย (Cascading Delete)
                 if (collectionName === 'employees' && empName) {
-                    // ลบประวัติลงเวลา
                     const qTime = query(collection(db, getPath('time_records')), where('name', '==', empName));
                     const timeSnap = await getDocs(qTime);
                     timeSnap.forEach(async (d) => { await deleteDoc(doc(db, getPath('time_records'), d.id)); });
 
-                    // ลบประวัติคำร้อง
                     const qReq = query(collection(db, getPath('requests')), where('name', '==', empName));
                     const reqSnap = await getDocs(qReq);
                     reqSnap.forEach(async (d) => { await deleteDoc(doc(db, getPath('requests'), d.id)); });
