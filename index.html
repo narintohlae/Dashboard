@@ -64,6 +64,33 @@
         </div>
     </div>
 
+    <!-- Edit Time Modal -->
+    <div id="edit-time-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 px-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">แก้ไขเวลาเข้า-ออกงาน</h3>
+            <input type="hidden" id="edit-time-id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อพนักงาน</label>
+                <input type="text" id="edit-time-name" readonly class="w-full border p-2 rounded-lg bg-gray-100 text-gray-600 outline-none font-medium">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">ประเภท</label>
+                <select id="edit-time-type" class="w-full border p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="เข้างาน">เข้างาน</option>
+                    <option value="ออกงาน">ออกงาน</option>
+                </select>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">วัน-เวลาที่ถูกต้อง</label>
+                <input type="datetime-local" id="edit-time-value" class="w-full border p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeModal('edit-time-modal')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition">ยกเลิก</button>
+                <button onclick="saveTimeRecord()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow">บันทึกเวลา</button>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-6xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div>
@@ -96,57 +123,10 @@
                                 <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">วันที่ / เวลา</th>
                                 <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
                                 <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">สถานะ</th>
+                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="records-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="3" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tab 2: คำร้องขออนุมัติ -->
-            <div id="content-requests" class="hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border rounded-lg overflow-hidden">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">วันที่ส่ง</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ประเภท / วันที่ต้องการ</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">เหตุผล</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">สถานะ</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="requests-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="6" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tab 3: จัดการพนักงาน -->
-            <div id="content-employees" class="hidden">
-                <div class="flex justify-between items-center mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <p class="text-sm text-blue-800">
-                        <span class="font-bold">ข้อมูลพนักงาน:</span> รหัส PIN ของพนักงานแต่ละคนต้องไม่ซ้ำกัน เพื่อใช้เข้าสู่ระบบบนมือถือของพวกเขาเอง
-                    </p>
-                    <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg shadow-md transition flex items-center font-bold whitespace-nowrap ml-4">
-                        + เพิ่มพนักงาน
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border rounded-lg overflow-hidden">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ชื่อ-นามสกุล</th>
-                                <th class="py-3 px-4 border-b text-left text-sm font-bold text-gray-700">ตำแหน่ง</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">รหัส PIN</th>
-                                <th class="py-3 px-4 border-b text-center text-sm font-bold text-gray-700">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="employees-body" class="divide-y divide-gray-100">
                             <tr><td colspan="4" class="py-8 text-center text-gray-500">กำลังโหลด...</td></tr>
                         </tbody>
                     </table>
@@ -218,6 +198,14 @@
             document.getElementById('emp-modal').classList.remove('hidden');
         };
 
+        window.openEditTimeModal = function(id, name, type, localDateTime) {
+            document.getElementById('edit-time-id').value = id;
+            document.getElementById('edit-time-name').value = name;
+            document.getElementById('edit-time-type').value = type;
+            document.getElementById('edit-time-value').value = localDateTime;
+            document.getElementById('edit-time-modal').classList.remove('hidden');
+        };
+
         window.openDeleteModal = function(id, collection, displayMsg, empName = '') {
             document.getElementById('delete-id').value = id;
             document.getElementById('delete-collection').value = collection;
@@ -275,17 +263,33 @@
                 let records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 records.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 const tbody = document.getElementById('records-body');
-                if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
+                if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
                 
-                tbody.innerHTML = records.map(record => `
+                tbody.innerHTML = records.map(record => {
+                    // แปลงเวลาให้พร้อมสำหรับ input datetime-local
+                    const dateObj = record.timestamp?.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
+                    const y = dateObj.getFullYear();
+                    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const d = String(dateObj.getDate()).padStart(2, '0');
+                    const h = String(dateObj.getHours()).padStart(2, '0');
+                    const min = String(dateObj.getMinutes()).padStart(2, '0');
+                    const localDateTime = `${y}-${m}-${d}T${h}:${min}`;
+
+                    return `
                     <tr class="hover:bg-gray-50">
                         <td class="py-3 px-4 border-b text-sm">${formatDate(record.timestamp)}</td>
                         <td class="py-3 px-4 border-b font-bold text-gray-800">${record.name}</td>
                         <td class="py-3 px-4 border-b text-center">
                             <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${record.type}</span>
                         </td>
+                        <td class="py-3 px-4 border-b text-center space-x-2">
+                            <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${localDateTime}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">แก้ไข</button>
+                            <span class="text-gray-300">|</span>
+                            <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลา${record.type} ของ ${record.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 transition">ลบ</button>
+                        </td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
             }, console.error);
 
             // 2. Requests
@@ -390,6 +394,27 @@
                 }
                 closeModal('emp-modal');
             } catch (error) { showMessage("บันทึกข้อมูลล้มเหลว", true); }
+        };
+
+        window.saveTimeRecord = async function() {
+            const id = document.getElementById('edit-time-id').value;
+            const type = document.getElementById('edit-time-type').value;
+            const datetimeVal = document.getElementById('edit-time-value').value;
+
+            if (!datetimeVal) return showMessage("กรุณาระบุวันและเวลา", true);
+
+            try {
+                // แปลงค่าจากช่องกรอกกลับเป็น Date Object เพื่ออัพเดทขึ้น Firebase
+                await updateDoc(doc(db, getPath('time_records'), id), { 
+                    type: type,
+                    timestamp: new Date(datetimeVal)
+                });
+                showMessage("แก้ไขเวลาสำเร็จ");
+                closeModal('edit-time-modal');
+            } catch (error) { 
+                console.error(error);
+                showMessage("แก้ไขข้อมูลล้มเหลว", true); 
+            }
         };
 
         window.executeDelete = async function() {
