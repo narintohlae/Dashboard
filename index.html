@@ -23,6 +23,27 @@
         <p id="message-text" class="text-gray-800 font-medium"></p>
     </div>
 
+    <!-- Store Holiday Modal -->
+    <div id="holiday-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-sm fade-in">
+            <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-3">เพิ่มวันหยุดประจำปีของร้าน</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">วันที่หยุด <span class="text-rose-500">*</span></label>
+                    <input type="date" id="holiday-date" class="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">ชื่อเทศกาล/เหตุผล <span class="text-rose-500">*</span></label>
+                    <input type="text" id="holiday-name" class="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:ring-2 focus:ring-amber-500 outline-none" placeholder="เช่น วันสงกรานต์, ปีใหม่">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeModal('holiday-modal')" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl transition font-bold w-full">ยกเลิก</button>
+                <button onclick="saveStoreHoliday()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition font-bold shadow-md w-full">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Employee Modal -->
     <div id="emp-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto fade-in">
@@ -52,7 +73,7 @@
                     <div class="grid grid-cols-2 gap-4 mb-3">
                         <div>
                             <label class="block text-xs font-bold text-emerald-800 mb-1">ค่าแรงรายวัน (บาท)</label>
-                            <input type="number" id="emp-wage" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700" placeholder="เช่น 350">
+                            <input type="number" id="emp-wage" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-emerald-800 mb-1">วันหยุดประจำสัปดาห์</label>
@@ -71,8 +92,8 @@
                     
                     <div>
                         <label class="block text-xs font-bold text-emerald-800 mb-1">ค่า OT / ชั่วโมง (บาท)</label>
-                        <input type="number" id="emp-ot-rate" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700" placeholder="เช่น 50">
-                        <p class="text-xs text-emerald-600 mt-2 font-medium">ระบบจะคิด OT เมื่อพนักงานกดออกงานหลังเวลา 18:00 น.</p>
+                        <input type="number" id="emp-ot-rate" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700">
+                        <p class="text-xs text-emerald-600 mt-2 font-medium">ระบบคิด OT อัตโนมัติเมื่อพนักงานกดออกงานหลัง 18:00 น.</p>
                     </div>
                 </div>
             </div>
@@ -84,7 +105,7 @@
         </div>
     </div>
 
-    <!-- Edit Time Record Modal -->
+    <!-- Edit Time Modal -->
     <div id="edit-time-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-sm fade-in text-center">
             <h3 class="text-xl font-bold mb-4 text-gray-900 border-b pb-3">แก้ไขเวลาเข้า-ออกงาน</h3>
@@ -106,7 +127,7 @@
 
             <div class="flex space-x-3">
                 <button onclick="closeModal('edit-time-modal')" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition">ยกเลิก</button>
-                <button onclick="saveTimeRecord()" class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition shadow-md">บันทึกเวลาใหม่</button>
+                <button onclick="saveTimeRecord()" class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition shadow-md">บันทึกใหม่</button>
             </div>
         </div>
     </div>
@@ -148,7 +169,7 @@
                 คำร้องต่างๆ
                 <span id="badge-requests" class="hidden ml-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
             </button>
-            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1">พนักงาน & PIN</button>
+            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1">พนักงาน & วันหยุด</button>
             <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-6 py-4 text-emerald-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1 bg-emerald-50/50 rounded-tr-2xl">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 สรุปเงินเดือน
@@ -198,31 +219,59 @@
                 </div>
             </div>
 
-            <!-- Tab 3: Employees -->
-            <div id="content-employees" class="hidden fade-in">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <p class="text-sm text-blue-800 mb-4 md:mb-0">
-                        <span class="font-bold">ข้อมูลพนักงาน:</span> ตั้งค่ารหัส PIN, ค่าแรง, OT และวันหยุดประจำสัปดาห์
-                    </p>
-                    <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-xl shadow-md transition flex items-center font-bold whitespace-nowrap">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        เพิ่มพนักงาน
-                    </button>
+            <!-- Tab 3: Employees & Settings -->
+            <div id="content-employees" class="hidden fade-in space-y-6">
+                
+                <!-- Section: Store Holidays -->
+                <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-amber-800 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                วันหยุดประจำปีของร้าน (โควต้า 4 วัน/ปี)
+                            </h3>
+                            <p class="text-xs text-amber-700 mt-1">วันที่ตั้งค่าไว้จะถูกคิดเงินให้พนักงานทุกคนอัตโนมัติในรอบบิลนั้นๆ</p>
+                        </div>
+                        <button onclick="document.getElementById('holiday-modal').classList.remove('hidden')" class="bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded-xl shadow-md transition font-bold text-sm whitespace-nowrap">
+                            + เพิ่มวันหยุดร้าน
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto bg-white rounded-xl border border-amber-200">
+                        <table class="min-w-full">
+                            <tbody id="holidays-body" class="divide-y divide-gray-100 text-sm">
+                                <tr><td colspan="3" class="py-4 text-center text-gray-500">ยังไม่มีการตั้งค่าวัดหยุดร้าน</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white rounded-xl overflow-hidden border">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อ-นามสกุล</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">ค่าแรง / OT / วันหยุด</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">รหัส PIN</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="employees-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="4" class="py-10 text-center text-gray-500">กำลังโหลด...</td></tr>
-                        </tbody>
-                    </table>
+
+                <!-- Section: Employees -->
+                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                        <p class="text-sm text-blue-800 font-medium mb-4 md:mb-0">
+                            ข้อมูลพนักงาน, รหัส PIN, และการติดตามโควต้าวันลา (10 วัน/ปี)
+                        </p>
+                        <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-xl shadow-md transition flex items-center font-bold whitespace-nowrap">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                            เพิ่มพนักงาน
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto bg-white rounded-xl border border-blue-200">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อ-นามสกุล</th>
+                                    <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">ค่าแรง / วันหยุดปกติ</th>
+                                    <th class="py-4 px-4 text-center text-sm font-bold text-blue-600">ใช้สิทธิ์ลาปีนี้</th>
+                                    <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employees-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="4" class="py-10 text-center text-gray-500">กำลังโหลด...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -234,18 +283,20 @@
                             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             คำนวณเงินเดือน & OT
                         </h2>
-                        <p class="text-emerald-600 text-sm mt-1">เปลี่ยนวันที่ปุ๊บ ระบบจะคำนวณยอดให้ใหม่ทันที</p>
+                        <p class="text-emerald-600 text-sm mt-1">ระบบคิดเงินให้อัตโนมัติ: วันทำงาน + วันหยุดประจำสัปดาห์ + วันหยุดร้าน</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-end">
-                        <!-- ใส่ onchange เพื่อให้คำนวณออโต้เมื่อเปลี่ยนวันที่ -->
                         <div>
                             <label class="block text-xs font-bold text-emerald-700 mb-1">เริ่มวันที่</label>
-                            <input type="date" id="pay-start" onchange="calculatePayroll()" class="border border-emerald-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700 w-full sm:w-auto bg-white shadow-sm">
+                            <input type="date" id="pay-start" class="border border-emerald-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700 w-full sm:w-auto">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-emerald-700 mb-1">ถึงวันที่</label>
-                            <input type="date" id="pay-end" onchange="calculatePayroll()" class="border border-emerald-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700 w-full sm:w-auto bg-white shadow-sm">
+                            <input type="date" id="pay-end" class="border border-emerald-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700 w-full sm:w-auto">
                         </div>
+                        <button onclick="calculatePayroll()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl shadow transition w-full sm:w-auto">
+                            คำนวณยอด
+                        </button>
                     </div>
                 </div>
 
@@ -254,7 +305,7 @@
                         <thead class="bg-gray-50 border-b">
                             <tr>
                                 <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-blue-600 bg-blue-50/50" title="วันทำงานจริง + วันหยุดที่ได้เงิน">รวมวันจ่าย</th>
+                                <th class="py-4 px-4 text-center text-sm font-bold text-blue-600 bg-blue-50/50" title="วันทำงาน + วันหยุดได้เงิน">รวมวันจ่าย</th>
                                 <th class="py-4 px-4 text-right text-sm font-bold text-gray-600 bg-gray-50">ค่าแรงรวม</th>
                                 <th class="py-4 px-4 text-center text-sm font-bold text-amber-600 bg-amber-50/50">ชม. OTรวม</th>
                                 <th class="py-4 px-4 text-right text-sm font-bold text-gray-600 bg-gray-50">เงิน OTรวม</th>
@@ -262,7 +313,7 @@
                             </tr>
                         </thead>
                         <tbody id="payroll-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="6" class="py-12 text-center text-gray-500">กรุณาเลือกวันที่เพื่อดูสรุป</td></tr>
+                            <tr><td colspan="6" class="py-12 text-center text-gray-500">กรุณากดปุ่ม "คำนวณยอด" ด้านบนเพื่อดูสรุป</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -298,6 +349,8 @@
         let currentUser = null;
         let employeesDataGlobal = []; 
         let allTimeRecordsGlobal = []; 
+        let allRequestsGlobal = [];
+        let storeHolidaysGlobal = [];
         
         const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
 
@@ -358,17 +411,14 @@
             document.getElementById('delete-id').value = id;
             document.getElementById('delete-collection').value = collection;
             document.getElementById('delete-modal').setAttribute('data-empname', empName || '');
-            document.getElementById('delete-message').innerHTML = `ลบข้อมูล <b>"${displayMsg}"</b> ทิ้งอย่างถาวรใช่หรือไม่?<br><span class="text-rose-500 text-sm mt-2 block">(ระวัง! หากลบชื่อพนักงาน ประวัติทุกอย่างจะหายไปทั้งหมด)</span>`;
+            document.getElementById('delete-message').innerHTML = `ลบข้อมูล <b>"${displayMsg}"</b> ทิ้งอย่างถาวรใช่หรือไม่?`;
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
-        // แก้ปัญหาการตัด string ด้วยช่องว่างในมือถือ โดยการดึง date และ time ออกมาต่อกันให้เป็นระเบียบ
         const formatDate = (timestamp) => {
             if (!timestamp) return '...';
             const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
-            const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            return `${dateStr} | ${timeStr} น.`;
+            return d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         };
         const formatDisplayDate = (dateString) => {
             if (!dateString) return '';
@@ -399,6 +449,27 @@
         function loadAllData() {
             if (!currentUser) return;
             
+            // 0. Store Holidays
+            onSnapshot(collection(db, getPath('store_holidays')), (snapshot) => {
+                storeHolidaysGlobal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                storeHolidaysGlobal.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                const tbody = document.getElementById('holidays-body');
+                if (storeHolidaysGlobal.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-500">ยังไม่มีการตั้งค่าวัดหยุดร้าน</td></tr>';
+                } else {
+                    tbody.innerHTML = storeHolidaysGlobal.map(h => `
+                        <tr class="hover:bg-amber-50/50">
+                            <td class="py-3 px-4 font-bold text-gray-800">${formatDisplayDate(h.date)}</td>
+                            <td class="py-3 px-4 text-gray-600">${h.name}</td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="openDeleteModal('${h.id}', 'store_holidays', 'วันหยุด: ${h.name}')" class="text-xs text-rose-500 font-bold bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100">ลบ</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            }, console.error);
+
             // 1. Records
             onSnapshot(collection(db, getPath('time_records')), (snapshot) => {
                 let records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -413,23 +484,19 @@
                     if (record.timestamp) {
                         const d = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
                         const tzOffset = d.getTimezoneOffset() * 60000;
-                        const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0,-1);
-                        isoDateTime = localISOTime.substring(0, 16); 
+                        isoDateTime = (new Date(d - tzOffset)).toISOString().slice(0, 16);
                     }
 
-                    // แก้ไข: เอา opacity-0 ออก ให้ปุ่มโชว์ตลอด เพื่อให้กดง่ายในมือถือ
                     return `
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="hover:bg-gray-50 transition group">
                         <td class="py-3 px-4 border-b text-sm">${formatDate(record.timestamp)}</td>
                         <td class="py-3 px-4 border-b font-bold text-gray-800">${record.name}</td>
                         <td class="py-3 px-4 border-b text-center">
                             <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${record.type}</span>
                         </td>
-                        <td class="py-3 px-4 border-b text-center">
-                            <div class="flex flex-col sm:flex-row gap-2 justify-center">
-                                <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${isoDateTime}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg transition-colors w-full sm:w-auto">แก้ไขเวลา</button>
-                                <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลาของ ${record.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg transition-colors w-full sm:w-auto">ลบ</button>
-                            </div>
+                        <td class="py-3 px-4 border-b text-center space-x-2">
+                            <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${isoDateTime}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">แก้ไขเวลา</button>
+                            <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลาของ ${record.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">ลบ</button>
                         </td>
                     </tr>
                 `}).join('');
@@ -438,6 +505,7 @@
             // 2. Requests
             onSnapshot(collection(db, getPath('requests')), (snapshot) => {
                 let requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allRequestsGlobal = requests;
                 requests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 
                 let pendingCount = 0;
@@ -456,13 +524,10 @@
                     if (req.type === 'สลับวันหยุด' && req.swapDate) {
                         dateDisplay += `<br><span class="text-xs text-emerald-600 font-bold">มาแทน: ${formatDisplayDate(req.swapDate)}</span>`;
                     }
-                    
-                    const reqDObj = req.timestamp ? (req.timestamp.toDate ? req.timestamp.toDate() : new Date(req.timestamp)) : new Date();
-                    const reqDateStr = reqDObj.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
 
                     return `
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 border-b text-sm text-gray-600">${reqDateStr}</td>
+                        <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(req.timestamp).split(' ')[0]}</td>
                         <td class="py-3 px-4 border-b font-bold text-gray-800">${req.name}</td>
                         <td class="py-3 px-4 border-b text-sm">${typeDisplay}<br>${dateDisplay}</td>
                         <td class="py-3 px-4 border-b text-sm max-w-xs truncate" title="${req.reason}">${req.reason}</td>
@@ -480,48 +545,63 @@
                 const badge = document.getElementById('badge-requests');
                 if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); } 
                 else { badge.classList.add('hidden'); }
+                
+                // อัปเดตตารางพนักงานด้วย (เพื่อโชว์โควต้าวันลาที่เปลี่ยนไป)
+                renderEmployeeTable();
             }, console.error);
 
             // 3. Employees
             onSnapshot(collection(db, getPath('employees')), (snapshot) => {
                 employeesDataGlobal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 employeesDataGlobal.sort((a, b) => a.name.localeCompare(b.name, 'th'));
-                
-                const tbody = document.getElementById('employees-body');
-                if (employeesDataGlobal.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
-                
-                tbody.innerHTML = employeesDataGlobal.map(emp => {
-                    const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; 
-                    const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
-                    const otDisplay = emp.otRate ? `OT: ฿${parseFloat(emp.otRate)}/ชม.` : '-';
-                    const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
-
-                    return `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}<br><span class="text-xs text-gray-400 font-normal">${emp.position || 'พนักงาน'}</span></td>
-                        <td class="py-3 px-4 border-b text-center text-sm">
-                            <span class="text-emerald-600 font-bold block">${wageDisplay} <span class="text-amber-600 text-xs ml-1">(${otDisplay})</span></span>
-                            <span class="text-xs text-gray-500">หยุด: ${offDisplay}</span>
-                        </td>
-                        <td class="py-3 px-4 border-b text-center text-lg font-mono tracking-widest font-bold text-blue-600">${pinDisplay}</td>
-                        <td class="py-3 px-4 border-b text-center">
-                            <div class="flex flex-col sm:flex-row gap-2 justify-center">
-                                <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}', '${emp.wage || ''}', '${emp.dayOff || ''}', '${emp.otRate || ''}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg w-full sm:w-auto">แก้ไข</button>
-                                <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg w-full sm:w-auto">ลบ</button>
-                            </div>
-                        </td>
-                    </tr>
-                    `;
-                }).join('');
+                renderEmployeeTable();
             }, console.error);
         }
 
-        // --- ระบบคำนวณเงินเดือน & OT (PAYROLL) ---
+        function renderEmployeeTable() {
+            const tbody = document.getElementById('employees-body');
+            if (employeesDataGlobal.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
+            
+            const currentYear = new Date().getFullYear().toString();
+
+            tbody.innerHTML = employeesDataGlobal.map(emp => {
+                const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
+                const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
+
+                // นับสิทธิ์ลาที่ใช้ไปในปีนี้
+                const usedLeaves = allRequestsGlobal.filter(r => 
+                    r.name === emp.name && 
+                    r.status === 'อนุมัติแล้ว' && 
+                    r.date.startsWith(currentYear) &&
+                    (r.type === 'ลากิจ' || r.type === 'ลาป่วย' || r.type === 'ลาพักร้อน')
+                ).length;
+                
+                let leaveQuotaHtml = `<span class="font-bold text-lg">${usedLeaves}</span> <span class="text-xs text-gray-500">/10 วัน</span>`;
+                if(usedLeaves >= 10) leaveQuotaHtml = `<span class="font-bold text-rose-600 text-lg">${usedLeaves}</span> <span class="text-xs text-rose-500">(หมดโควต้า)</span>`;
+
+                return `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}<br><span class="text-xs text-gray-400 font-normal">PIN: ${emp.pin || '****'}</span></td>
+                    <td class="py-3 px-4 border-b text-center text-sm">
+                        <span class="text-emerald-600 font-bold block">${wageDisplay}</span>
+                        <span class="text-xs text-gray-500">หยุด: ${offDisplay}</span>
+                    </td>
+                    <td class="py-3 px-4 border-b text-center text-blue-600">${leaveQuotaHtml}</td>
+                    <td class="py-3 px-4 border-b text-center space-x-2">
+                        <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}', '${emp.wage || ''}', '${emp.dayOff || ''}', '${emp.otRate || ''}')" class="text-sm font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1 px-3 rounded-lg">แก้ไข</button>
+                        <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="text-sm font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1 px-3 rounded-lg">ลบ</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        // --- ระบบคำนวณเงินเดือน & OT (รวมวันหยุดร้าน) ---
         window.calculatePayroll = function() {
             const startStr = document.getElementById('pay-start').value;
             const endStr = document.getElementById('pay-end').value;
             
-            if(!startStr || !endStr) return; // เงียบๆ ไว้ถ้ากรอกไม่ครบ เพราะมันรันออโต้
+            if(!startStr || !endStr) return showMessage("กรุณาเลือกวันที่ให้ครบ", true);
 
             const startDate = new Date(startStr);
             startDate.setHours(0,0,0,0);
@@ -537,8 +617,8 @@
 
             const html = employeesDataGlobal.map(emp => {
                 const empRecords = allTimeRecordsGlobal.filter(r => r.name === emp.name);
-                
                 const dailyRecords = {};
+                
                 empRecords.forEach(r => {
                     if(!r.timestamp) return;
                     const d = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
@@ -554,36 +634,40 @@
                     }
                 });
 
+                // 1. วันทำงานจริง
                 const workedDaysCount = Object.keys(dailyRecords).filter(k => dailyRecords[k].in !== null).length;
 
-                let paidDayOffs = 0;
+                // 2. วันหยุดที่ได้เงิน (วันหยุดประจำสัปดาห์ + วันหยุดร้าน)
+                const paidOffDates = new Set();
                 const regOff = parseInt(emp.dayOff);
-                if(!isNaN(regOff)) {
-                    for(let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                        if(d.getDay() === regOff) {
-                            const dStr = d.toLocaleDateString('en-CA');
-                            if(!dailyRecords[dStr] || !dailyRecords[dStr].in) {
-                                paidDayOffs++;
-                            }
-                        }
+                
+                for(let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dStr = d.toLocaleDateString('en-CA');
+                    const isWeeklyOff = (!isNaN(regOff) && d.getDay() === regOff);
+                    const isStoreHoliday = storeHolidaysGlobal.some(h => h.date === dStr);
+                    
+                    // ถ้าเป็นวันหยุด (แบบใดแบบหนึ่ง) และ "ไม่ได้มาทำงาน" ถือว่าได้พักแบบได้ตังค์
+                    if((isWeeklyOff || isStoreHoliday) && (!dailyRecords[dStr] || !dailyRecords[dStr].in)) {
+                        paidOffDates.add(dStr);
                     }
                 }
+                const paidDayOffs = paidOffDates.size;
 
+                // 3. คิด OT
                 let totalOTHours = 0;
                 Object.values(dailyRecords).forEach(day => {
                     if(day.out) {
                         const outTime = day.out;
                         const otLimitTime = new Date(outTime);
                         otLimitTime.setHours(18, 0, 0, 0); 
-
                         if(outTime > otLimitTime) {
-                            const diffMs = outTime - otLimitTime;
-                            const diffHrs = diffMs / (1000 * 60 * 60);
+                            const diffHrs = (outTime - otLimitTime) / (1000 * 60 * 60);
                             totalOTHours += Math.round(diffHrs * 100) / 100; 
                         }
                     }
                 });
 
+                // 4. สรุปเงิน
                 const wage = parseFloat(emp.wage) || 0;
                 const otRate = parseFloat(emp.otRate) || 0;
                 
@@ -611,7 +695,29 @@
             tbody.innerHTML = html;
         };
 
-        // --- ระบบแก้ไขและลบข้อมูล ---
+        // --- Save Store Holiday ---
+        window.saveStoreHoliday = async function() {
+            const date = document.getElementById('holiday-date').value;
+            const name = document.getElementById('holiday-name').value.trim();
+
+            if (!date || !name) return showMessage("กรุณากรอกข้อมูลให้ครบถ้วน", true);
+            
+            // เช็คโควต้า 4 วันต่อปี
+            const year = date.substring(0, 4);
+            const holidaysThisYear = storeHolidaysGlobal.filter(h => h.date.startsWith(year)).length;
+            if(holidaysThisYear >= 4) {
+                return showMessage(`ปี ${year} มีการตั้งวันหยุดร้านครบ 4 วันแล้ว ไม่สามารถเพิ่มได้อีก`, true);
+            }
+
+            try {
+                await addDoc(collection(db, getPath('store_holidays')), { date, name });
+                showMessage("เพิ่มวันหยุดร้านสำเร็จ");
+                closeModal('holiday-modal');
+                document.getElementById('holiday-date').value = '';
+                document.getElementById('holiday-name').value = '';
+            } catch (error) { showMessage("เกิดข้อผิดพลาด", true); }
+        };
+
         window.saveEmployee = async function() {
             const id = document.getElementById('emp-id').value;
             const name = document.getElementById('emp-name').value.trim();
@@ -637,7 +743,6 @@
                     showMessage("เพิ่มพนักงานสำเร็จ");
                 }
                 closeModal('emp-modal');
-                // เอาการโหลดซ้ำออก เพราะ onSnapshot จะ trigger ให้ loadAllData ใหม่อยู่แล้ว
             } catch (error) { showMessage("บันทึกข้อมูลล้มเหลว", true); }
         };
 
@@ -648,18 +753,22 @@
             
             try {
                 await deleteDoc(doc(db, getPath(collectionName), id));
+                
                 if (collectionName === 'employees' && empName) {
                     const batch = writeBatch(db);
                     const timeQ = query(collection(db, getPath('time_records')), where("name", "==", empName));
                     const timeDocs = await getDocs(timeQ);
                     timeDocs.forEach(d => batch.delete(d.ref));
+                    
                     const reqQ = query(collection(db, getPath('requests')), where("name", "==", empName));
                     const reqDocs = await getDocs(reqQ);
                     reqDocs.forEach(d => batch.delete(d.ref));
                     await batch.commit(); 
                 }
+
                 showMessage("ลบข้อมูลสำเร็จแล้ว");
                 closeModal('delete-modal');
+                if(!document.getElementById('content-payroll').classList.contains('hidden')) calculatePayroll();
             } catch (error) { showMessage("ลบข้อมูลล้มเหลว", true); }
         };
 
@@ -675,21 +784,16 @@
             const id = document.getElementById('edit-time-id').value;
             const type = document.getElementById('edit-time-type').value;
             const dtString = document.getElementById('edit-time-datetime').value;
+
             if(!dtString) return showMessage("กรุณาระบุวันที่และเวลาให้ครบถ้วน", true);
+
             try {
                 const dateObj = new Date(dtString);
                 const newTimestamp = Timestamp.fromDate(dateObj);
-                await updateDoc(doc(db, getPath('time_records'), id), { type: type, timestamp: newTimestamp });
+                await updateDoc(doc(db, getPath('time_records'), id), { type, timestamp: newTimestamp });
                 showMessage("แก้ไขเวลาลงงานสำเร็จ!");
                 closeModal('edit-time-modal');
             } catch(e) { showMessage("เกิดข้อผิดพลาดในการแก้ไขเวลา", true); }
-        };
-
-        window.updateRequestStatus = async function(docId, newStatus) {
-            try {
-                await updateDoc(doc(db, getPath('requests'), docId), { status: newStatus });
-                showMessage(`เปลี่ยนสถานะเป็น ${newStatus} แล้ว`);
-            } catch (error) { showMessage("เกิดข้อผิดพลาด", true); }
         };
 
     </script>
