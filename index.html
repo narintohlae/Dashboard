@@ -2,324 +2,270 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบผู้จัดการ - Dashboard & Payroll</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบผู้จัดการ - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
-        .tab-btn { border-bottom: 3px solid transparent; }
-        .tab-btn.active { border-bottom-color: #3b82f6; color: #1d4ed8; font-weight: 700; }
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Style for bottom nav active state */
+        .nav-btn { color: #9ca3af; transition: color 0.2s; }
+        .nav-btn.active { color: #2563eb; }
+        .nav-btn.active svg { stroke-width: 2.5; }
+        
+        /* Floating Action Button (FAB) */
+        .fab { position: fixed; bottom: 80px; right: 20px; z-index: 40; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="h-screen w-full flex justify-center bg-gray-100 overflow-hidden">
 
     <!-- Message Box -->
-    <div id="message-box" class="hidden fixed top-4 right-4 left-4 md:left-auto bg-white shadow-xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300">
+    <div id="message-box" class="hidden fixed top-4 right-4 left-4 max-w-md mx-auto bg-white shadow-2xl border-l-4 p-4 rounded-2xl z-[60] transition-all duration-300">
         <p id="message-text" class="text-gray-800 font-medium"></p>
     </div>
 
-    <!-- Store Holiday Modal -->
-    <div id="holiday-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-sm fade-in">
-            <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-3">เพิ่มวันหยุดประจำปีของร้าน</h3>
+    <!-- Store Holiday Modal (Bottom Sheet Style) -->
+    <div id="holiday-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end justify-center z-50">
+        <div class="bg-white p-6 rounded-t-3xl shadow-2xl w-full max-w-md fade-in pb-safe">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4"></div>
+            <h3 class="text-xl font-bold mb-4 text-gray-800">วันหยุดประจำปีร้าน</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">วันที่หยุด <span class="text-rose-500">*</span></label>
-                    <input type="date" id="holiday-date" class="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">วันที่หยุด <span class="text-rose-500">*</span></label>
+                    <input type="date" id="holiday-date" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">ชื่อเทศกาล/เหตุผล <span class="text-rose-500">*</span></label>
-                    <input type="text" id="holiday-name" class="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:ring-2 focus:ring-amber-500 outline-none" placeholder="เช่น วันสงกรานต์, ปีใหม่">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">ชื่อเทศกาล <span class="text-rose-500">*</span></label>
+                    <input type="text" id="holiday-name" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none" placeholder="เช่น วันสงกรานต์">
                 </div>
             </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button onclick="closeModal('holiday-modal')" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl transition font-bold w-full">ยกเลิก</button>
-                <button onclick="saveStoreHoliday()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition font-bold shadow-md w-full">บันทึก</button>
+            <div class="flex space-x-3 mt-6">
+                <button onclick="closeModal('holiday-modal')" class="flex-1 py-3.5 bg-gray-100 text-gray-800 rounded-xl font-bold active:scale-95 transition">ยกเลิก</button>
+                <button onclick="saveStoreHoliday()" class="flex-1 py-3.5 bg-amber-500 text-white rounded-xl font-bold shadow-md active:scale-95 transition">บันทึก</button>
             </div>
         </div>
     </div>
 
-    <!-- Employee Modal -->
-    <div id="emp-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto fade-in">
-            <h3 id="emp-modal-title" class="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">เพิ่มพนักงานใหม่</h3>
+    <!-- Employee Modal (Bottom Sheet Style) -->
+    <div id="emp-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end justify-center z-50">
+        <div class="bg-white p-6 rounded-t-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto fade-in pb-safe hide-scrollbar">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4"></div>
+            <h3 id="emp-modal-title" class="text-xl font-bold mb-4 text-gray-800">เพิ่มพนักงาน</h3>
             <input type="hidden" id="emp-id">
             
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">ชื่อ-นามสกุล <span class="text-rose-500">*</span></label>
-                    <input type="text" id="emp-name" class="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น สมชาย ใจดี">
+                    <label class="block text-xs font-bold text-gray-700 ml-1 mb-1">ชื่อ <span class="text-rose-500">*</span></label>
+                    <input type="text" id="emp-name" class="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">ตำแหน่ง</label>
-                    <input type="text" id="emp-position" class="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น พนักงานขาย">
+                    <label class="block text-xs font-bold text-gray-700 ml-1 mb-1">ตำแหน่ง</label>
+                    <input type="text" id="emp-position" class="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 
-                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <label class="block text-sm font-bold text-blue-800 mb-2">รหัส PIN เข้าสู่ระบบ <span class="text-rose-500">*</span></label>
-                    <input type="password" id="emp-pin" maxlength="4" class="w-full border border-blue-200 p-3 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none tracking-[1em] text-center text-xl font-bold text-gray-700" placeholder="****">
-                    <p class="text-xs text-blue-600 mt-2 font-medium">⚠️ รหัส 4 หลัก ห้ามซ้ำกับพนักงานคนอื่น</p>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <label class="block text-xs font-bold text-blue-800 ml-1 mb-1">รหัส PIN 4 หลัก <span class="text-rose-500">*</span></label>
+                    <input type="password" id="emp-pin" maxlength="4" inputmode="numeric" class="w-full bg-white border border-blue-200 p-3 rounded-xl outline-none tracking-[1em] text-center text-xl font-bold focus:ring-2 focus:ring-blue-500" placeholder="****">
                 </div>
 
-                <!-- ส่วนตั้งค่าเงินเดือนและ OT -->
-                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                    <h4 class="font-bold text-emerald-800 mb-3 border-b border-emerald-200 pb-2">ตั้งค่าเงินเดือน & OT</h4>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-3">
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                    <p class="font-bold text-emerald-800 text-xs mb-2">เงินเดือน & OT</p>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
                         <div>
-                            <label class="block text-xs font-bold text-emerald-800 mb-1">ค่าแรงรายวัน (บาท)</label>
-                            <input type="number" id="emp-wage" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700">
+                            <label class="block text-[10px] font-bold text-emerald-700 mb-1">ค่าแรง (บาท/วัน)</label>
+                            <input type="number" id="emp-wage" class="w-full bg-white border border-emerald-200 p-2.5 rounded-xl outline-none font-bold text-sm focus:ring-2 focus:ring-emerald-500" inputmode="numeric">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-emerald-800 mb-1">วันหยุดประจำสัปดาห์</label>
-                            <select id="emp-dayoff" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-gray-700">
-                                <option value="">ไม่มีวันหยุด</option>
-                                <option value="0">วันอาทิตย์</option>
-                                <option value="1">วันจันทร์</option>
-                                <option value="2">วันอังคาร</option>
-                                <option value="3">วันพุธ</option>
-                                <option value="4">วันพฤหัสบดี</option>
-                                <option value="5">วันศุกร์</option>
-                                <option value="6">วันเสาร์</option>
-                            </select>
+                            <label class="block text-[10px] font-bold text-emerald-700 mb-1">ค่า OT (บาท/ชม.)</label>
+                            <input type="number" id="emp-ot-rate" class="w-full bg-white border border-emerald-200 p-2.5 rounded-xl outline-none font-bold text-sm focus:ring-2 focus:ring-emerald-500" inputmode="numeric">
                         </div>
                     </div>
-                    
                     <div>
-                        <label class="block text-xs font-bold text-emerald-800 mb-1">ค่า OT / ชั่วโมง (บาท)</label>
-                        <input type="number" id="emp-ot-rate" class="w-full border border-emerald-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-gray-700">
-                        <p class="text-xs text-emerald-600 mt-2 font-medium">ระบบคิด OT อัตโนมัติเมื่อพนักงานกดออกงานหลัง 18:00 น.</p>
+                        <label class="block text-[10px] font-bold text-emerald-700 mb-1">วันหยุดสัปดาห์</label>
+                        <select id="emp-dayoff" class="w-full bg-white border border-emerald-200 p-2.5 rounded-xl outline-none text-sm focus:ring-2 focus:ring-emerald-500">
+                            <option value="">ไม่มีวันหยุด</option>
+                            <option value="0">อาทิตย์</option><option value="1">จันทร์</option><option value="2">อังคาร</option>
+                            <option value="3">พุธ</option><option value="4">พฤหัส</option><option value="5">ศุกร์</option><option value="6">เสาร์</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-end space-x-3 mt-8">
-                <button onclick="closeModal('emp-modal')" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl transition font-bold">ยกเลิก</button>
-                <button onclick="saveEmployee()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition font-bold shadow-md">บันทึกข้อมูล</button>
+            <div class="flex space-x-3 mt-6">
+                <button onclick="closeModal('emp-modal')" class="flex-1 py-3.5 bg-gray-100 text-gray-800 rounded-xl font-bold active:scale-95 transition">ยกเลิก</button>
+                <button onclick="saveEmployee()" class="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md active:scale-95 transition">บันทึก</button>
             </div>
         </div>
     </div>
 
     <!-- Edit Time Modal -->
-    <div id="edit-time-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-sm fade-in text-center">
-            <h3 class="text-xl font-bold mb-4 text-gray-900 border-b pb-3">แก้ไขเวลาเข้า-ออกงาน</h3>
-            <p id="edit-time-name" class="font-bold text-blue-600 mb-4 text-lg"></p>
+    <div id="edit-time-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end justify-center z-50">
+        <div class="bg-white p-6 rounded-t-3xl shadow-2xl w-full max-w-sm fade-in pb-safe">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4"></div>
+            <h3 class="text-lg font-bold mb-1 text-gray-900">แก้ไขเวลา</h3>
+            <p id="edit-time-name" class="font-bold text-blue-600 mb-4 text-sm"></p>
             <input type="hidden" id="edit-time-id">
             
-            <div class="mb-4 text-left">
-                <label class="block text-sm font-bold text-gray-700 mb-1">ประเภท</label>
-                <select id="edit-time-type" class="w-full border p-2.5 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none font-bold">
-                    <option value="เข้างาน">เข้างาน</option>
-                    <option value="ออกงาน">ออกงาน</option>
-                </select>
-            </div>
-
-            <div class="mb-6 text-left">
-                <label class="block text-sm font-bold text-gray-700 mb-1">วันที่และเวลา</label>
-                <input type="datetime-local" id="edit-time-datetime" class="w-full border p-2.5 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="space-y-3 mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">ประเภท</label>
+                    <select id="edit-time-type" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none font-bold">
+                        <option value="เข้างาน">เข้างาน</option><option value="ออกงาน">ออกงาน</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">วันที่และเวลา</label>
+                    <input type="datetime-local" id="edit-time-datetime" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none">
+                </div>
             </div>
 
             <div class="flex space-x-3">
-                <button onclick="closeModal('edit-time-modal')" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition">ยกเลิก</button>
-                <button onclick="saveTimeRecord()" class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition shadow-md">บันทึกใหม่</button>
+                <button onclick="closeModal('edit-time-modal')" class="flex-1 py-3.5 bg-gray-100 text-gray-800 rounded-xl font-bold active:scale-95 transition">ยกเลิก</button>
+                <button onclick="saveTimeRecord()" class="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md active:scale-95 transition">บันทึก</button>
             </div>
         </div>
     </div>
 
     <!-- Delete Confirm Modal -->
-    <div id="delete-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center fade-in">
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm text-center fade-in">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-rose-100 mb-4">
-                <svg class="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <svg class="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </div>
-            <h3 class="text-xl font-bold mb-2 text-gray-900">ยืนยันการลบข้อมูล</h3>
-            <p id="delete-message" class="mb-8 text-gray-500">คุณแน่ใจหรือไม่?</p>
+            <h3 class="text-xl font-bold mb-2 text-gray-900">ยืนยันการลบ</h3>
+            <p id="delete-message" class="text-sm text-gray-500 mb-6"></p>
             <input type="hidden" id="delete-id">
             <input type="hidden" id="delete-collection">
             <div class="flex space-x-3">
-                <button onclick="closeModal('delete-modal')" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition">ยกเลิก</button>
-                <button onclick="executeDelete()" class="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition shadow-md">ลบข้อมูลทิ้ง</button>
+                <button onclick="closeModal('delete-modal')" class="flex-1 py-3.5 bg-gray-100 text-gray-800 rounded-xl font-bold active:scale-95 transition">ยกเลิก</button>
+                <button onclick="executeDelete()" class="flex-1 py-3.5 bg-rose-600 text-white rounded-xl font-bold shadow-md active:scale-95 transition">ลบทิ้ง</button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <!-- Main View -->
+    <div class="w-full max-w-md h-full bg-gray-50 flex flex-col relative overflow-hidden shadow-2xl">
+        
+        <!-- Header (Sticky) -->
+        <div class="bg-blue-600 px-5 py-4 text-white flex justify-between items-center shadow-sm z-10">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800 tracking-wide">แผงควบคุมผู้จัดการ</h1>
-                <p id="status" class="text-sm text-gray-500 mt-1">กำลังเชื่อมต่อฐานข้อมูล...</p>
+                <h1 class="text-xl font-bold">หลังบ้าน</h1>
+                <p id="status" class="text-[10px] text-blue-200">กำลังเชื่อมต่อ...</p>
             </div>
-            <div class="mt-4 md:mt-0 bg-blue-50 text-blue-800 px-5 py-2.5 rounded-xl font-bold shadow-sm border border-blue-100 flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <div class="bg-blue-700/50 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
                 <span id="current-date"></span>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="bg-white rounded-t-2xl border-b flex overflow-x-auto hide-scrollbar">
-            <button onclick="switchTab('records')" id="tab-records" class="tab-btn active px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1">ประวัติลงเวลา</button>
-            <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1">
-                คำร้องต่างๆ
-                <span id="badge-requests" class="hidden ml-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
-            </button>
-            <button onclick="switchTab('employees')" id="tab-employees" class="tab-btn px-6 py-4 text-gray-600 font-medium whitespace-nowrap transition flex-1">พนักงาน & วันหยุด</button>
-            <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-6 py-4 text-emerald-600 font-medium whitespace-nowrap transition flex items-center justify-center flex-1 bg-emerald-50/50 rounded-tr-2xl">
-                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                สรุปเงินเดือน
-            </button>
-        </div>
-
-        <!-- Content Area -->
-        <div class="bg-white p-6 rounded-b-2xl shadow-sm min-h-[600px] border border-t-0 border-gray-100">
+        <!-- Content Area (Scrollable with bottom padding) -->
+        <div class="flex-1 overflow-y-auto pb-24 px-4 pt-4 hide-scrollbar">
             
             <!-- Tab 1: Records -->
             <div id="content-records" class="block fade-in">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white rounded-xl overflow-hidden border">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">วันที่ / เวลา</th>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">สถานะ</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="records-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="4" class="py-10 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- Live Store Status (New Feature) -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-4">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        สถานะที่ร้านวันนี้
+                    </h3>
+                    <div id="live-status-list" class="flex flex-wrap gap-2">
+                        <span class="text-xs text-gray-400">กำลังโหลด...</span>
+                    </div>
+                </div>
+
+                <h3 class="text-sm font-bold text-gray-500 mb-2 ml-1">ประวัติล่าสุด</h3>
+                <div id="records-body" class="space-y-3">
+                    <!-- Cards will be generated here -->
                 </div>
             </div>
 
             <!-- Tab 2: Requests -->
-            <div id="content-requests" class="hidden fade-in">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white rounded-xl overflow-hidden border">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">วันที่ส่ง</th>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ประเภท / วันที่หยุด</th>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">เหตุผล</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">สถานะ</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">ดำเนินการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="requests-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="6" class="py-10 text-center text-gray-500">กำลังโหลด...</td></tr>
-                        </tbody>
-                    </table>
+            <div id="content-requests" class="hidden fade-in space-y-3">
+                <div id="requests-body">
+                    <!-- Cards will be generated here -->
                 </div>
             </div>
 
-            <!-- Tab 3: Employees & Settings -->
-            <div id="content-employees" class="hidden fade-in space-y-6">
+            <!-- Tab 3: Employees -->
+            <div id="content-employees" class="hidden fade-in">
                 
-                <!-- Section: Store Holidays -->
-                <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-amber-800 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                วันหยุดประจำปีของร้าน (โควต้า 4 วัน/ปี)
-                            </h3>
-                            <p class="text-xs text-amber-700 mt-1">วันที่ตั้งค่าไว้จะถูกคิดเงินให้พนักงานทุกคนอัตโนมัติในรอบบิลนั้นๆ</p>
-                        </div>
-                        <button onclick="document.getElementById('holiday-modal').classList.remove('hidden')" class="bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded-xl shadow-md transition font-bold text-sm whitespace-nowrap">
-                            + เพิ่มวันหยุดร้าน
-                        </button>
+                <!-- Store Holiday Settings -->
+                <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 shadow-sm mb-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-amber-800 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            วันหยุดร้าน (4 วัน/ปี)
+                        </h3>
+                        <button onclick="document.getElementById('holiday-modal').classList.remove('hidden')" class="bg-amber-500 text-white py-1.5 px-3 rounded-lg text-xs font-bold active:scale-95 transition">+ เพิ่ม</button>
                     </div>
-                    
-                    <div class="overflow-x-auto bg-white rounded-xl border border-amber-200">
-                        <table class="min-w-full">
-                            <tbody id="holidays-body" class="divide-y divide-gray-100 text-sm">
-                                <tr><td colspan="3" class="py-4 text-center text-gray-500">ยังไม่มีการตั้งค่าวัดหยุดร้าน</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <div id="holidays-body" class="space-y-2"></div>
                 </div>
 
-                <!-- Section: Employees -->
-                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                        <p class="text-sm text-blue-800 font-medium mb-4 md:mb-0">
-                            ข้อมูลพนักงาน, รหัส PIN, และการติดตามโควต้าวันลา (10 วัน/ปี)
-                        </p>
-                        <button onclick="openEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-xl shadow-md transition flex items-center font-bold whitespace-nowrap">
-                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            เพิ่มพนักงาน
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto bg-white rounded-xl border border-blue-200">
-                        <table class="min-w-full">
-                            <thead class="bg-gray-50 border-b">
-                                <tr>
-                                    <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อ-นามสกุล</th>
-                                    <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">ค่าแรง / วันหยุดปกติ</th>
-                                    <th class="py-4 px-4 text-center text-sm font-bold text-blue-600">ใช้สิทธิ์ลาปีนี้</th>
-                                    <th class="py-4 px-4 text-center text-sm font-bold text-gray-700">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="employees-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="4" class="py-10 text-center text-gray-500">กำลังโหลด...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="flex justify-between items-center mb-2 ml-1">
+                    <h3 class="text-sm font-bold text-gray-500">รายชื่อพนักงาน</h3>
                 </div>
+                <div id="employees-body" class="space-y-3">
+                    <!-- Cards will be generated here -->
+                </div>
+                
+                <!-- FAB for Adding Employee -->
+                <button onclick="openEmpModal()" class="fab bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
             </div>
 
-            <!-- Tab 4: สรุปเงินเดือน (Payroll) -->
+            <!-- Tab 4: Payroll -->
             <div id="content-payroll" class="hidden fade-in">
-                <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-100 mb-6 flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
-                    <div class="w-full md:w-auto">
-                        <h2 class="text-xl font-bold text-emerald-800 flex items-center">
-                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                            คำนวณเงินเดือน & OT
-                        </h2>
-                        <p class="text-emerald-600 text-sm mt-1">ระบบคิดเงินให้อัตโนมัติ: วันทำงาน + วันหยุดประจำสัปดาห์ + วันหยุดร้าน</p>
+                <!-- Filter Card (Sticky on top) -->
+                <div class="bg-emerald-600 p-4 rounded-3xl shadow-lg mb-4 text-white">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        <h2 class="text-sm font-bold">รอบบิลเงินเดือน</h2>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-end">
-                        <div>
-                            <label class="block text-xs font-bold text-emerald-700 mb-1">เริ่มวันที่</label>
-                            <input type="date" id="pay-start" class="border border-emerald-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700 w-full sm:w-auto">
+                    <div class="flex space-x-2">
+                        <div class="flex-1">
+                            <label class="block text-[10px] text-emerald-100 mb-1">เริ่ม</label>
+                            <input type="date" id="pay-start" onchange="calculatePayroll()" class="w-full bg-white/20 border border-emerald-400/30 text-white p-2.5 rounded-xl text-sm outline-none focus:bg-white focus:text-gray-800 transition">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-emerald-700 mb-1">ถึงวันที่</label>
-                            <input type="date" id="pay-end" class="border border-emerald-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700 w-full sm:w-auto">
+                        <div class="flex-1">
+                            <label class="block text-[10px] text-emerald-100 mb-1">ถึง</label>
+                            <input type="date" id="pay-end" onchange="calculatePayroll()" class="w-full bg-white/20 border border-emerald-400/30 text-white p-2.5 rounded-xl text-sm outline-none focus:bg-white focus:text-gray-800 transition">
                         </div>
-                        <button onclick="calculatePayroll()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl shadow transition w-full sm:w-auto">
-                            คำนวณยอด
-                        </button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white rounded-xl overflow-hidden border">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-bold text-gray-700">ชื่อพนักงาน</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-blue-600 bg-blue-50/50" title="วันทำงาน + วันหยุดได้เงิน">รวมวันจ่าย</th>
-                                <th class="py-4 px-4 text-right text-sm font-bold text-gray-600 bg-gray-50">ค่าแรงรวม</th>
-                                <th class="py-4 px-4 text-center text-sm font-bold text-amber-600 bg-amber-50/50">ชม. OTรวม</th>
-                                <th class="py-4 px-4 text-right text-sm font-bold text-gray-600 bg-gray-50">เงิน OTรวม</th>
-                                <th class="py-4 px-4 text-right text-sm font-bold text-gray-900 bg-emerald-50">ยอดจ่ายสุทธิ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payroll-body" class="divide-y divide-gray-100">
-                            <tr><td colspan="6" class="py-12 text-center text-gray-500">กรุณากดปุ่ม "คำนวณยอด" ด้านบนเพื่อดูสรุป</td></tr>
-                        </tbody>
-                    </table>
+                <div id="payroll-body" class="space-y-3">
+                    <!-- Cards will be generated here -->
                 </div>
             </div>
 
         </div>
+
+        <!-- 🌟 Bottom Navigation Bar -->
+        <nav class="absolute bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-center pb-safe pt-2 pb-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-30">
+            <button onclick="switchTab('records')" id="nav-records" class="nav-btn active flex flex-col items-center w-1/4 py-1">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[10px] font-bold">ประวัติ</span>
+            </button>
+            <button onclick="switchTab('requests')" id="nav-requests" class="nav-btn relative flex flex-col items-center w-1/4 py-1">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="text-[10px] font-bold">คำร้อง</span>
+                <span id="badge-requests" class="hidden absolute top-0 right-3 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">0</span>
+            </button>
+            <button onclick="switchTab('employees')" id="nav-employees" class="nav-btn flex flex-col items-center w-1/4 py-1">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <span class="text-[10px] font-bold">พนักงาน</span>
+            </button>
+            <button onclick="switchTab('payroll')" id="nav-payroll" class="nav-btn flex flex-col items-center w-1/4 py-1 text-emerald-600">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[10px] font-bold">เงินเดือน</span>
+            </button>
+        </nav>
+
     </div>
 
     <!-- Firebase SDK -->
@@ -354,6 +300,7 @@
         
         const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
 
+        // Init Payroll Dates
         const today = new Date();
         const currentDay = today.getDay() || 7; 
         const monday = new Date(today);
@@ -364,14 +311,14 @@
         document.getElementById('pay-start').value = monday.toLocaleDateString('en-CA');
         document.getElementById('pay-end').value = sunday.toLocaleDateString('en-CA');
 
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = new Date().toLocaleDateString('th-TH', options);
+        const optionsDate = { day: 'numeric', month: 'short', year: '2-digit' };
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('th-TH', optionsDate);
 
         window.showMessage = function(msg, isError = false) {
             const box = document.getElementById('message-box');
             const text = document.getElementById('message-text');
             text.textContent = msg;
-            box.className = `fixed top-4 right-4 left-4 md:left-auto shadow-2xl border-l-4 p-4 rounded-xl z-50 transition-all duration-300 ${isError ? 'bg-rose-50 border-rose-500 text-rose-800' : 'bg-emerald-50 border-emerald-500 text-emerald-800'}`;
+            box.className = `fixed top-4 right-4 left-4 max-w-md mx-auto shadow-2xl border-l-4 p-4 rounded-2xl z-[60] transition-all duration-300 ${isError ? 'bg-rose-50 border-rose-500 text-rose-800' : 'bg-emerald-50 border-emerald-500 text-emerald-800'}`;
             box.classList.remove('hidden');
             setTimeout(() => { box.classList.add('hidden'); }, 3000);
         };
@@ -379,21 +326,15 @@
         window.switchTab = function(tabName) {
             ['records', 'requests', 'employees', 'payroll'].forEach(name => {
                 document.getElementById(`content-${name}`).classList.add('hidden');
-                document.getElementById(`tab-${name}`).classList.remove('active', 'border-blue-500', 'text-blue-700', 'border-emerald-500', 'text-emerald-700');
+                document.getElementById(`nav-${name}`).classList.remove('active');
             });
             document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).classList.add('active');
             
-            if(tabName === 'payroll') {
-                document.getElementById(`tab-${tabName}`).classList.add('active', 'border-emerald-500', 'text-emerald-700');
-                calculatePayroll(); 
-            } else {
-                document.getElementById(`tab-${tabName}`).classList.add('active', 'border-blue-500', 'text-blue-700');
-            }
+            if(tabName === 'payroll') calculatePayroll(); 
         };
 
-        window.closeModal = function(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        };
+        window.closeModal = function(modalId) { document.getElementById(modalId).classList.add('hidden'); };
 
         window.openEmpModal = function(id = '', name = '', position = '', pin = '', wage = '', dayoff = '', otRate = '') {
             document.getElementById('emp-id').value = id;
@@ -403,7 +344,7 @@
             document.getElementById('emp-wage').value = wage; 
             document.getElementById('emp-dayoff').value = dayoff; 
             document.getElementById('emp-ot-rate').value = otRate; 
-            document.getElementById('emp-modal-title').textContent = id ? 'แก้ไขข้อมูลพนักงาน' : 'เพิ่มพนักงานใหม่';
+            document.getElementById('emp-modal-title').textContent = id ? 'แก้ไขข้อมูลพนักงาน' : 'เพิ่มพนักงาน';
             document.getElementById('emp-modal').classList.remove('hidden');
         };
 
@@ -411,35 +352,32 @@
             document.getElementById('delete-id').value = id;
             document.getElementById('delete-collection').value = collection;
             document.getElementById('delete-modal').setAttribute('data-empname', empName || '');
-            document.getElementById('delete-message').innerHTML = `ลบข้อมูล <b>"${displayMsg}"</b> ทิ้งอย่างถาวรใช่หรือไม่?`;
+            document.getElementById('delete-message').innerHTML = `ลบ <b>"${displayMsg}"</b> ถาวรใช่หรือไม่?<br><span class="text-rose-500 text-xs mt-1 block">(ข้อมูลประวัติของคนนี้จะถูกลบไปด้วย)</span>`;
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
-        const formatDate = (timestamp) => {
-            if (!timestamp) return '...';
+        const formatDateParts = (timestamp) => {
+            if (!timestamp) return { date: '..', time: '..' };
             const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        };
-        const formatDisplayDate = (dateString) => {
-            if (!dateString) return '';
-            return new Date(dateString).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+            return {
+                date: d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }),
+                time: d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+            };
         };
 
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) { console.error("Auth error:", error); }
+                } else { await signInAnonymously(auth); }
+            } catch (error) { console.error("Auth err"); }
         }
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
-                document.getElementById('status').textContent = "🟢 เชื่อมต่อเรียบร้อยแล้ว";
-                document.getElementById('status').className = "text-sm text-emerald-600 mt-1 font-bold";
+                document.getElementById('status').textContent = "🟢 ออนไลน์";
+                document.getElementById('status').className = "text-[10px] text-emerald-200 font-bold";
                 loadAllData();
             }
         });
@@ -454,20 +392,23 @@
                 storeHolidaysGlobal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 storeHolidaysGlobal.sort((a, b) => new Date(a.date) - new Date(b.date));
                 
-                const tbody = document.getElementById('holidays-body');
+                const container = document.getElementById('holidays-body');
                 if (storeHolidaysGlobal.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-500">ยังไม่มีการตั้งค่าวัดหยุดร้าน</td></tr>';
+                    container.innerHTML = '<div class="text-center text-xs text-amber-600/50 py-2">ยังไม่มีการตั้งค่าวัดหยุดร้าน</div>';
                 } else {
-                    tbody.innerHTML = storeHolidaysGlobal.map(h => `
-                        <tr class="hover:bg-amber-50/50">
-                            <td class="py-3 px-4 font-bold text-gray-800">${formatDisplayDate(h.date)}</td>
-                            <td class="py-3 px-4 text-gray-600">${h.name}</td>
-                            <td class="py-3 px-4 text-right">
-                                <button onclick="openDeleteModal('${h.id}', 'store_holidays', 'วันหยุด: ${h.name}')" class="text-xs text-rose-500 font-bold bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100">ลบ</button>
-                            </td>
-                        </tr>
-                    `).join('');
+                    container.innerHTML = storeHolidaysGlobal.map(h => {
+                        const d = new Date(h.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                        return `
+                        <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-amber-100 shadow-sm">
+                            <div class="flex items-center">
+                                <div class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-lg mr-2">${d}</div>
+                                <span class="text-xs font-bold text-gray-700">${h.name}</span>
+                            </div>
+                            <button onclick="openDeleteModal('${h.id}', 'store_holidays', '${h.name}')" class="text-rose-500 p-1 active:scale-95"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
+                    `}).join('');
                 }
+                if(!document.getElementById('content-payroll').classList.contains('hidden')) calculatePayroll();
             }, console.error);
 
             // 1. Records
@@ -476,29 +417,35 @@
                 allTimeRecordsGlobal = records; 
                 records.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 
-                const tbody = document.getElementById('records-body');
-                if (records.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีข้อมูล</td></tr>';
+                updateLiveStoreStatus();
+
+                const container = document.getElementById('records-body');
+                if (records.length === 0) return container.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">ไม่มีข้อมูล</div>';
                 
-                tbody.innerHTML = records.map(record => {
+                container.innerHTML = records.map(record => {
+                    const dt = formatDateParts(record.timestamp);
                     let isoDateTime = '';
                     if (record.timestamp) {
                         const d = record.timestamp.toDate ? record.timestamp.toDate() : new Date(record.timestamp);
-                        const tzOffset = d.getTimezoneOffset() * 60000;
-                        isoDateTime = (new Date(d - tzOffset)).toISOString().slice(0, 16);
+                        isoDateTime = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
                     }
+                    const isCheckIn = record.type === 'เข้างาน';
 
                     return `
-                    <tr class="hover:bg-gray-50 transition group">
-                        <td class="py-3 px-4 border-b text-sm">${formatDate(record.timestamp)}</td>
-                        <td class="py-3 px-4 border-b font-bold text-gray-800">${record.name}</td>
-                        <td class="py-3 px-4 border-b text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm ${record.type === 'เข้างาน' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${record.type}</span>
-                        </td>
-                        <td class="py-3 px-4 border-b text-center space-x-2">
-                            <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${isoDateTime}')" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">แก้ไขเวลา</button>
-                            <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลาของ ${record.name}')" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">ลบ</button>
-                        </td>
-                    </tr>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-2 h-10 rounded-full ${isCheckIn ? 'bg-emerald-400' : 'bg-rose-400'} mr-3"></div>
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm">${record.name}</p>
+                                <p class="text-xs text-gray-500">${dt.date} • ${dt.time} น.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-lg ${isCheckIn ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${record.type}</span>
+                            <button onclick="openEditTimeModal('${record.id}', '${record.name}', '${record.type}', '${isoDateTime}')" class="p-1.5 text-gray-400 hover:text-blue-500 bg-gray-50 rounded-lg active:scale-95"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                            <button onclick="openDeleteModal('${record.id}', 'time_records', 'เวลาของ ${record.name}')" class="p-1.5 text-gray-400 hover:text-rose-500 bg-gray-50 rounded-lg active:scale-95"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
+                    </div>
                 `}).join('');
             }, console.error);
 
@@ -509,44 +456,49 @@
                 requests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
                 
                 let pendingCount = 0;
-                const tbody = document.getElementById('requests-body');
+                const container = document.getElementById('requests-body');
                 
-                if (requests.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-gray-500">ยังไม่มีคำร้อง</td></tr>';
+                if (requests.length === 0) return container.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">ไม่มีคำร้อง</div>';
                 
-                tbody.innerHTML = requests.map(req => {
+                container.innerHTML = requests.map(req => {
                     if (req.status === 'รออนุมัติ') pendingCount++;
-                    let statusColor = 'bg-amber-100 text-amber-800 border-amber-200';
-                    if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                    if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-800 border-rose-200';
+                    let statusColor = 'bg-amber-100 text-amber-800';
+                    if (req.status === 'อนุมัติแล้ว') statusColor = 'bg-emerald-100 text-emerald-800';
+                    if (req.status === 'ไม่อนุมัติ') statusColor = 'bg-rose-100 text-rose-800';
 
-                    let typeDisplay = `<span class="font-bold text-blue-600">${req.type}</span>`;
-                    let dateDisplay = `<span class="text-xs text-gray-500 font-bold">หยุด: ${formatDisplayDate(req.date)}</span>`;
+                    let d = new Date(req.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                    let dateDisplay = `<span class="font-bold text-gray-700">หยุด:</span> ${d}`;
                     if (req.type === 'สลับวันหยุด' && req.swapDate) {
-                        dateDisplay += `<br><span class="text-xs text-emerald-600 font-bold">มาแทน: ${formatDisplayDate(req.swapDate)}</span>`;
+                        let sd = new Date(req.swapDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                        dateDisplay += ` <span class="text-gray-300">|</span> <span class="font-bold text-blue-600">แทน:</span> ${sd}`;
                     }
 
                     return `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 border-b text-sm text-gray-600">${formatDate(req.timestamp).split(' ')[0]}</td>
-                        <td class="py-3 px-4 border-b font-bold text-gray-800">${req.name}</td>
-                        <td class="py-3 px-4 border-b text-sm">${typeDisplay}<br>${dateDisplay}</td>
-                        <td class="py-3 px-4 border-b text-sm max-w-xs truncate" title="${req.reason}">${req.reason}</td>
-                        <td class="py-3 px-4 border-b text-center"><span class="px-3 py-1 rounded-md text-xs font-bold border ${statusColor}">${req.status}</span></td>
-                        <td class="py-3 px-4 border-b text-center">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-sm">${req.name}</h3>
+                                <span class="text-[10px] text-gray-500">${formatDateParts(req.timestamp).date} • <span class="text-blue-600 font-bold">${req.type}</span></span>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-lg ${statusColor}">${req.status}</span>
+                        </div>
+                        <div class="bg-gray-50 p-2.5 rounded-xl text-xs mb-3">
+                            <div>${dateDisplay}</div>
+                            <div class="mt-1 text-gray-500 line-clamp-2">"${req.reason}"</div>
+                        </div>
+                        <div class="flex space-x-2">
                             ${req.status === 'รออนุมัติ' ? `
-                                <button onclick="updateRequestStatus('${req.id}', 'อนุมัติแล้ว')" class="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-3 rounded-lg shadow mb-1 w-full transition">อนุมัติ</button>
-                                <button onclick="updateRequestStatus('${req.id}', 'ไม่อนุมัติ')" class="text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white py-1.5 px-3 rounded-lg shadow w-full transition">ไม่อนุมัติ</button>
-                            ` : `<button onclick="openDeleteModal('${req.id}', 'requests', 'คำร้องของ ${req.name}')" class="text-xs font-bold text-gray-400 hover:text-rose-600 transition underline">ลบข้อมูล</button>`}
-                        </td>
-                    </tr>
+                                <button onclick="updateRequestStatus('${req.id}', 'อนุมัติแล้ว')" class="flex-1 bg-emerald-500 text-white py-2 rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">อนุมัติ</button>
+                                <button onclick="updateRequestStatus('${req.id}', 'ไม่อนุมัติ')" class="flex-1 bg-rose-100 text-rose-700 py-2 rounded-xl text-xs font-bold active:scale-95 transition">ไม่อนุมัติ</button>
+                            ` : `<button onclick="openDeleteModal('${req.id}', 'requests', 'คำร้องของ ${req.name}')" class="w-full bg-gray-100 text-gray-500 py-2 rounded-xl text-xs font-bold active:scale-95 transition">ลบประวัติ</button>`}
+                        </div>
+                    </div>
                     `;
                 }).join('');
 
                 const badge = document.getElementById('badge-requests');
                 if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); } 
                 else { badge.classList.add('hidden'); }
-                
-                // อัปเดตตารางพนักงานด้วย (เพื่อโชว์โควต้าวันลาที่เปลี่ยนไป)
                 renderEmployeeTable();
             }, console.error);
 
@@ -558,62 +510,87 @@
             }, console.error);
         }
 
+        // Live Store Status function
+        function updateLiveStoreStatus() {
+            const container = document.getElementById('live-status-list');
+            const todayStr = new Date().toLocaleDateString('th-TH');
+            
+            // หาคนที่ล่าสุดกด 'เข้างาน' ภายในวันนี้
+            const atStore = [];
+            employeesDataGlobal.forEach(emp => {
+                const myToday = allTimeRecordsGlobal.filter(r => {
+                    if(r.name !== emp.name || !r.timestamp) return false;
+                    const d = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+                    return d.toLocaleDateString('th-TH') === todayStr;
+                });
+                if(myToday.length > 0 && myToday[0].type === 'เข้างาน') {
+                    const d = myToday[0].timestamp.toDate ? myToday[0].timestamp.toDate() : new Date(myToday[0].timestamp);
+                    atStore.push({ name: emp.name, time: d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) });
+                }
+            });
+
+            if(atStore.length === 0) {
+                container.innerHTML = '<span class="text-xs font-medium text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">ยังไม่มีใครเข้าร้าน</span>';
+            } else {
+                container.innerHTML = atStore.map(p => `
+                    <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 flex items-center">
+                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1.5"></div>
+                        ${p.name} <span class="text-emerald-500 font-normal ml-1">(${p.time})</span>
+                    </span>
+                `).join('');
+            }
+        }
+
         function renderEmployeeTable() {
-            const tbody = document.getElementById('employees-body');
-            if (employeesDataGlobal.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500">ยังไม่มีรายชื่อ</td></tr>';
+            const container = document.getElementById('employees-body');
+            if (employeesDataGlobal.length === 0) return container.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">ยังไม่มีรายชื่อ</div>';
             
             const currentYear = new Date().getFullYear().toString();
 
-            tbody.innerHTML = employeesDataGlobal.map(emp => {
-                const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
-                const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
+            container.innerHTML = employeesDataGlobal.map(emp => {
+                const pinDisplay = emp.pin ? emp.pin.replace(/./g, '*') : '****'; 
+                const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage)}` : '-';
+                const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : '-';
 
-                // นับสิทธิ์ลาที่ใช้ไปในปีนี้
                 const usedLeaves = allRequestsGlobal.filter(r => 
-                    r.name === emp.name && 
-                    r.status === 'อนุมัติแล้ว' && 
+                    r.name === emp.name && r.status === 'อนุมัติแล้ว' && 
                     r.date.startsWith(currentYear) &&
                     (r.type === 'ลากิจ' || r.type === 'ลาป่วย' || r.type === 'ลาพักร้อน')
                 ).length;
                 
-                let leaveQuotaHtml = `<span class="font-bold text-lg">${usedLeaves}</span> <span class="text-xs text-gray-500">/10 วัน</span>`;
-                if(usedLeaves >= 10) leaveQuotaHtml = `<span class="font-bold text-rose-600 text-lg">${usedLeaves}</span> <span class="text-xs text-rose-500">(หมดโควต้า)</span>`;
+                let leaveColor = usedLeaves >= 10 ? 'text-rose-500' : 'text-blue-500';
 
                 return `
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="py-3 px-4 border-b font-bold text-gray-800">${emp.name}<br><span class="text-xs text-gray-400 font-normal">PIN: ${emp.pin || '****'}</span></td>
-                    <td class="py-3 px-4 border-b text-center text-sm">
-                        <span class="text-emerald-600 font-bold block">${wageDisplay}</span>
-                        <span class="text-xs text-gray-500">หยุด: ${offDisplay}</span>
-                    </td>
-                    <td class="py-3 px-4 border-b text-center text-blue-600">${leaveQuotaHtml}</td>
-                    <td class="py-3 px-4 border-b text-center space-x-2">
-                        <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}', '${emp.wage || ''}', '${emp.dayOff || ''}', '${emp.otRate || ''}')" class="text-sm font-bold text-blue-600 hover:text-blue-800 bg-blue-50 py-1 px-3 rounded-lg">แก้ไข</button>
-                        <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="text-sm font-bold text-rose-500 hover:text-rose-700 bg-rose-50 py-1 px-3 rounded-lg">ลบ</button>
-                    </td>
-                </tr>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm mb-1">${emp.name} <span class="font-normal text-xs text-gray-400">PIN: ${emp.pin}</span></h3>
+                        <div class="flex space-x-2 text-[10px]">
+                            <span class="bg-gray-50 text-gray-600 px-2 py-1 rounded border border-gray-100">หยุด: ${offDisplay}</span>
+                            <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">ลา: <span class="font-bold ${leaveColor}">${usedLeaves}/10</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-2">
+                        <button onclick="openEmpModal('${emp.id}', '${emp.name}', '${emp.position || ''}', '${emp.pin || ''}', '${emp.wage || ''}', '${emp.dayOff || ''}', '${emp.otRate || ''}')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition">แก้ไข</button>
+                        <button onclick="openDeleteModal('${emp.id}', 'employees', '${emp.name}', '${emp.name}')" class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition">ลบ</button>
+                    </div>
+                </div>
                 `;
             }).join('');
+            
+            updateLiveStoreStatus();
         }
 
-        // --- ระบบคำนวณเงินเดือน & OT (รวมวันหยุดร้าน) ---
+        // --- ระบบคำนวณเงินเดือน & OT (PAYROLL) ---
         window.calculatePayroll = function() {
             const startStr = document.getElementById('pay-start').value;
             const endStr = document.getElementById('pay-end').value;
-            
-            if(!startStr || !endStr) return showMessage("กรุณาเลือกวันที่ให้ครบ", true);
+            if(!startStr || !endStr) return;
 
-            const startDate = new Date(startStr);
-            startDate.setHours(0,0,0,0);
-            const endDate = new Date(endStr);
-            endDate.setHours(23,59,59,999);
-
-            const tbody = document.getElementById('payroll-body');
+            const startDate = new Date(startStr); startDate.setHours(0,0,0,0);
+            const endDate = new Date(endStr); endDate.setHours(23,59,59,999);
+            const container = document.getElementById('payroll-body');
             
-            if(employeesDataGlobal.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-gray-500">ไม่มีข้อมูลพนักงาน</td></tr>';
-                return;
-            }
+            if(employeesDataGlobal.length === 0) return container.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">ไม่มีข้อมูลพนักงาน</div>';
 
             const html = employeesDataGlobal.map(emp => {
                 const empRecords = allTimeRecordsGlobal.filter(r => r.name === emp.name);
@@ -634,11 +611,8 @@
                     }
                 });
 
-                // 1. วันทำงานจริง
                 const workedDaysCount = Object.keys(dailyRecords).filter(k => dailyRecords[k].in !== null).length;
-
-                // 2. วันหยุดที่ได้เงิน (วันหยุดประจำสัปดาห์ + วันหยุดร้าน)
-                const paidOffDates = new Set();
+                let paidDayOffs = 0;
                 const regOff = parseInt(emp.dayOff);
                 
                 for(let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
@@ -646,14 +620,11 @@
                     const isWeeklyOff = (!isNaN(regOff) && d.getDay() === regOff);
                     const isStoreHoliday = storeHolidaysGlobal.some(h => h.date === dStr);
                     
-                    // ถ้าเป็นวันหยุด (แบบใดแบบหนึ่ง) และ "ไม่ได้มาทำงาน" ถือว่าได้พักแบบได้ตังค์
                     if((isWeeklyOff || isStoreHoliday) && (!dailyRecords[dStr] || !dailyRecords[dStr].in)) {
-                        paidOffDates.add(dStr);
+                        paidDayOffs++;
                     }
                 }
-                const paidDayOffs = paidOffDates.size;
 
-                // 3. คิด OT
                 let totalOTHours = 0;
                 Object.values(dailyRecords).forEach(day => {
                     if(day.out) {
@@ -667,33 +638,66 @@
                     }
                 });
 
-                // 4. สรุปเงิน
                 const wage = parseFloat(emp.wage) || 0;
                 const otRate = parseFloat(emp.otRate) || 0;
-                
                 const totalBaseDays = workedDaysCount + paidDayOffs;
-                const totalBaseSalary = totalBaseDays * wage;
-                const totalOTSalary = totalOTHours * otRate;
-                const grandTotal = totalBaseSalary + totalOTSalary;
-
-                let dayDetails = `ทำ <span class="text-blue-600">${workedDaysCount}</span>`;
-                if(paidDayOffs > 0) dayDetails += ` + หยุด <span class="text-emerald-600">${paidDayOffs}</span>`;
-                dayDetails += ` = ${totalBaseDays}`;
+                const grandTotal = (totalBaseDays * wage) + (totalOTHours * otRate);
 
                 return `
-                    <tr class="hover:bg-emerald-50/30 transition border-b">
-                        <td class="py-3 px-4 font-bold text-gray-800">${emp.name}</td>
-                        <td class="py-3 px-4 text-center font-bold text-gray-800 bg-blue-50/20">${dayDetails}</td>
-                        <td class="py-3 px-4 text-right text-gray-600 font-bold bg-gray-50/50">฿${totalBaseSalary.toLocaleString()}</td>
-                        <td class="py-3 px-4 text-center font-bold text-amber-600 bg-amber-50/30">${totalOTHours.toFixed(2)}</td>
-                        <td class="py-3 px-4 text-right text-gray-600 font-bold bg-gray-50/50">฿${totalOTSalary.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td>
-                        <td class="py-3 px-4 text-right font-black text-emerald-700 text-lg bg-emerald-50/50">฿${grandTotal.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td>
-                    </tr>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden">
+                        <div class="absolute right-0 top-0 bg-emerald-500 text-white font-black text-sm px-3 py-1.5 rounded-bl-xl shadow-sm">
+                            ฿${grandTotal.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                        </div>
+                        <h3 class="font-bold text-gray-800 text-sm mb-3">${emp.name}</h3>
+                        
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-gray-500">วันทำงาน (มาจริง+พักได้เงิน)</span>
+                            <span class="text-xs font-bold text-blue-600">${workedDaysCount} + ${paidDayOffs} = ${totalBaseDays} วัน</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs text-gray-500">ล่วงเวลา (OT)</span>
+                            <span class="text-xs font-bold text-amber-600">${totalOTHours.toFixed(1)} ชม.</span>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-2.5 flex justify-between items-center mt-2 border border-gray-100">
+                            <div class="text-[10px] text-gray-500">เรท: ฿${wage}/วัน | OT: ฿${otRate}/ชม.</div>
+                            <button onclick="copyPayslip('${emp.name}', '${startStr}', '${endStr}', ${workedDaysCount}, ${paidDayOffs}, ${totalBaseDays}, ${wage}, ${totalOTHours}, ${otRate}, ${grandTotal})" class="bg-white border border-gray-200 text-gray-700 px-3 py-1 rounded-lg text-xs font-bold active:scale-95 transition shadow-sm flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                คัดลอกสลิป
+                            </button>
+                        </div>
+                    </div>
                 `;
             }).join('');
 
-            tbody.innerHTML = html;
+            container.innerHTML = html;
         };
+
+        // 1-Click Payslip Share
+        window.copyPayslip = function(name, start, end, work, off, totalDays, wage, otHrs, otRate, total) {
+            const d1 = new Date(start).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+            const d2 = new Date(end).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
+            
+            const txt = `[สรุปเงินเดือน] ${name}
+รอบ: ${d1} - ${d2}
+-------------------
+✔️ วันทำงานรวม: ${totalDays} วัน
+(มาจริง ${work} + วันหยุดนักขัตฯ/สัปดาห์ ${off})
+💵 ค่าแรงรวม: ฿${(totalDays*wage).toLocaleString()}
+-------------------
+⏱️ ล่วงเวลา (OT): ${otHrs} ชม.
+💵 เงิน OT รวม: ฿${(otHrs*otRate).toLocaleString()}
+-------------------
+💰 ยอดโอนสุทธิ: ฿${total.toLocaleString()}`;
+
+            const textArea = document.createElement("textarea");
+            textArea.value = txt;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            showMessage("คัดลอกสลิปเงินเดือนแล้ว! (นำไปวางในแชท LINE ได้เลย)");
+        }
 
         // --- Save Store Holiday ---
         window.saveStoreHoliday = async function() {
@@ -702,12 +706,9 @@
 
             if (!date || !name) return showMessage("กรุณากรอกข้อมูลให้ครบถ้วน", true);
             
-            // เช็คโควต้า 4 วันต่อปี
             const year = date.substring(0, 4);
             const holidaysThisYear = storeHolidaysGlobal.filter(h => h.date.startsWith(year)).length;
-            if(holidaysThisYear >= 4) {
-                return showMessage(`ปี ${year} มีการตั้งวันหยุดร้านครบ 4 วันแล้ว ไม่สามารถเพิ่มได้อีก`, true);
-            }
+            if(holidaysThisYear >= 4) return showMessage(`ปีนี้ตั้งหยุดครบ 4 วันแล้ว`, true);
 
             try {
                 await addDoc(collection(db, getPath('store_holidays')), { date, name });
@@ -727,21 +728,16 @@
             let dayOff = document.getElementById('emp-dayoff').value;
             let otRate = document.getElementById('emp-ot-rate').value.trim();
 
-            if (!name) return showMessage("กรุณาระบุชื่อพนักงาน", true);
-            if (!pin || pin.length < 4) return showMessage("กรุณากำหนดรหัส PIN 4 หลัก", true);
+            if (!name || !pin || pin.length < 4) return showMessage("กรุณากรอกชื่อและรหัส PIN 4 หลัก", true);
 
             const duplicatePin = employeesDataGlobal.find(e => e.pin === pin && e.id !== id);
-            if (duplicatePin) return showMessage(`รหัส PIN นึ้ถูกใช้โดย "${duplicatePin.name}" แล้ว กรุณาเปลี่ยนใหม่`, true);
+            if (duplicatePin) return showMessage(`PIN ซ้ำกับ "${duplicatePin.name}"`, true);
 
             try {
                 const data = { name, position, pin, wage, dayOff, otRate };
-                if (id) {
-                    await updateDoc(doc(db, getPath('employees'), id), data);
-                    showMessage("แก้ไขข้อมูลสำเร็จ");
-                } else {
-                    await addDoc(collection(db, getPath('employees')), data);
-                    showMessage("เพิ่มพนักงานสำเร็จ");
-                }
+                if (id) await updateDoc(doc(db, getPath('employees'), id), data);
+                else await addDoc(collection(db, getPath('employees')), data);
+                showMessage("บันทึกสำเร็จ");
                 closeModal('emp-modal');
             } catch (error) { showMessage("บันทึกข้อมูลล้มเหลว", true); }
         };
@@ -753,7 +749,6 @@
             
             try {
                 await deleteDoc(doc(db, getPath(collectionName), id));
-                
                 if (collectionName === 'employees' && empName) {
                     const batch = writeBatch(db);
                     const timeQ = query(collection(db, getPath('time_records')), where("name", "==", empName));
@@ -765,10 +760,8 @@
                     reqDocs.forEach(d => batch.delete(d.ref));
                     await batch.commit(); 
                 }
-
                 showMessage("ลบข้อมูลสำเร็จแล้ว");
                 closeModal('delete-modal');
-                if(!document.getElementById('content-payroll').classList.contains('hidden')) calculatePayroll();
             } catch (error) { showMessage("ลบข้อมูลล้มเหลว", true); }
         };
 
@@ -785,15 +778,22 @@
             const type = document.getElementById('edit-time-type').value;
             const dtString = document.getElementById('edit-time-datetime').value;
 
-            if(!dtString) return showMessage("กรุณาระบุวันที่และเวลาให้ครบถ้วน", true);
+            if(!dtString) return showMessage("กรุณาระบุวันที่และเวลา", true);
 
             try {
                 const dateObj = new Date(dtString);
                 const newTimestamp = Timestamp.fromDate(dateObj);
                 await updateDoc(doc(db, getPath('time_records'), id), { type, timestamp: newTimestamp });
-                showMessage("แก้ไขเวลาลงงานสำเร็จ!");
+                showMessage("แก้ไขสำเร็จ!");
                 closeModal('edit-time-modal');
-            } catch(e) { showMessage("เกิดข้อผิดพลาดในการแก้ไขเวลา", true); }
+            } catch(e) { showMessage("เกิดข้อผิดพลาด", true); }
+        };
+
+        window.updateRequestStatus = async function(docId, newStatus) {
+            try {
+                await updateDoc(doc(db, getPath('requests'), docId), { status: newStatus });
+                showMessage(`เปลี่ยนสถานะเป็น ${newStatus} แล้ว`);
+            } catch (error) { showMessage("เกิดข้อผิดพลาด", true); }
         };
 
     </script>
