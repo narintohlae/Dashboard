@@ -744,7 +744,10 @@
                 else await addDoc(collection(db, getPath('employees')), data);
                 showMessage("บันทึกสำเร็จ");
                 closeModal('emp-modal');
-            } catch (error) { showMessage("บันทึกข้อมูลล้มเหลว", true); }
+            } catch (error) { 
+    console.error("Firebase Error:", error);
+    showMessage("เกิดข้อผิดพลาด: " + error.message, true); 
+}
         };
 
         window.executeDelete = async function() {
