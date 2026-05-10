@@ -540,6 +540,9 @@
                     }
                     const dt = formatDateTime(req.timestamp);
 
+                    // ซ่อนส่วนของเหตุผลถ้าไม่มีการระบุ (เนื่องจากตอนนี้เอาออกไปแล้ว)
+                    let reasonHtml = req.reason ? `<div class="text-xs text-gray-500 truncate max-w-[200px]" title="${req.reason}">เหตุ: ${req.reason}</div>` : '';
+
                     return `
                     <tr class="hover:bg-gray-50/50 transition">
                         <td class="py-4 px-5 whitespace-nowrap align-middle">
@@ -550,7 +553,7 @@
                         <td class="py-4 px-5 align-middle min-w-[200px]">
                             <span class="font-bold text-blue-600 text-sm block mb-1">${req.type}</span>
                             <div class="text-xs text-gray-600 leading-relaxed mb-1">${dateDisplay}</div>
-                            <div class="text-xs text-gray-500 truncate max-w-[200px]" title="${req.reason}">เหตุ: ${req.reason}</div>
+                            ${reasonHtml}
                         </td>
                         <td class="py-4 px-5 whitespace-nowrap align-middle text-center">
                             <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${statusColor}">${req.status}</span>
@@ -591,7 +594,14 @@
             tbody.innerHTML = employeesDataGlobal.map(emp => {
                 const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
                 const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
-                const usedLeaves = allRequestsGlobal.filter(r => r.name === emp.name && r.status === 'อนุมัติแล้ว' && r.date.startsWith(currentYear) && (r.type === 'ลากิจ' || r.type === 'ลาป่วย' || r.type === 'ลาพักร้อน')).length;
+                
+                // อัปเดตการดึงข้อมูลการใช้โควต้า รองรับการลาแบบใหม่ "ลางาน" (และนับของเก่าที่อาจเคยมีด้วย)
+                const usedLeaves = allRequestsGlobal.filter(r => 
+                    r.name === emp.name && 
+                    r.status === 'อนุมัติแล้ว' && 
+                    r.date.startsWith(currentYear) && 
+                    (r.type === 'ลางาน' || r.type === 'ลากิจ' || r.type === 'ลาป่วย' || r.type === 'ลาพักร้อน')
+                ).length;
                 
                 let leaveQuotaHtml = `<span class="font-bold text-lg text-blue-600">${usedLeaves}</span> <span class="text-xs text-gray-500">/10 วัน</span>`;
                 if(usedLeaves >= 10) leaveQuotaHtml = `<span class="font-bold text-rose-600 text-lg">${usedLeaves}</span> <span class="text-[10px] text-rose-500 block">(หมดโควต้า)</span>`;
