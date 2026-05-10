@@ -739,7 +739,7 @@
             if (duplicatePin) return showMessage(`PIN ซ้ำกับ "${duplicatePin.name}"`, true);
 
             try {
-                const data = { name, position, pin, wage, dayOff, otRate };
+                const data = { name, pin, wage, dayOff, otRate };
                 if (id) await updateDoc(doc(db, getPath('employees'), id), data);
                 else await addDoc(collection(db, getPath('employees')), data);
                 showMessage("บันทึกสำเร็จ");
