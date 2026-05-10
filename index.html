@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ระบบผู้จัดการ - Dashboard</title>
+    
+    <!-- PWA Meta Tags & Manifest -->
+    <meta name="theme-color" content="#1d4ed8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ระบบผู้จัดการ">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="manifest" href="manifest.json">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -540,7 +549,6 @@
                     }
                     const dt = formatDateTime(req.timestamp);
 
-                    // ซ่อนส่วนของเหตุผลถ้าไม่มีการระบุ (เนื่องจากตอนนี้เอาออกไปแล้ว)
                     let reasonHtml = req.reason ? `<div class="text-xs text-gray-500 truncate max-w-[200px]" title="${req.reason}">เหตุ: ${req.reason}</div>` : '';
 
                     return `
@@ -595,7 +603,6 @@
                 const wageDisplay = emp.wage ? `฿${parseFloat(emp.wage).toLocaleString()}/วัน` : '-';
                 const offDisplay = emp.dayOff ? dayNames[parseInt(emp.dayOff)] : 'ไม่มี';
                 
-                // อัปเดตการดึงข้อมูลการใช้โควต้า รองรับการลาแบบใหม่ "ลางาน" (และนับของเก่าที่อาจเคยมีด้วย)
                 const usedLeaves = allRequestsGlobal.filter(r => 
                     r.name === emp.name && 
                     r.status === 'อนุมัติแล้ว' && 
@@ -793,6 +800,15 @@
                 await updateDoc(doc(db, getPath('requests'), docId), { status: newStatus });
             } catch (error) { showMessage("เกิดข้อผิดพลาด", true); }
         };
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.error('Service Worker Registration Failed', err));
+            });
+        }
 
     </script>
 </body>
