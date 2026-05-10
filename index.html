@@ -415,7 +415,6 @@
         window.openEmpModal = function(id = '', name = '', position = '', pin = '', wage = '', dayoff = '', otRate = '') {
             document.getElementById('emp-id').value = id;
             document.getElementById('emp-name').value = name;
-            document.getElementById('emp-position').value = position;
             document.getElementById('emp-pin').value = pin; 
             document.getElementById('emp-wage').value = wage; 
             document.getElementById('emp-dayoff').value = dayoff; 
@@ -729,7 +728,6 @@
         window.saveEmployee = async function() {
             const id = document.getElementById('emp-id').value;
             const name = document.getElementById('emp-name').value.trim();
-            const position = document.getElementById('emp-position').value.trim();
             let pin = document.getElementById('emp-pin').value.trim();
             let wage = document.getElementById('emp-wage').value.trim();
             let dayOff = document.getElementById('emp-dayoff').value;
