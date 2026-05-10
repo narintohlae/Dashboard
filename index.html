@@ -423,11 +423,15 @@
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
-        const formatDate = (timestamp) => {
-            if (!timestamp) return '...';
+        const formatDateTime = (timestamp) => {
+            if (!timestamp) return { date: '...', time: '...' };
             const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            return {
+                date: d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' }),
+                time: d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+            };
         };
+
         const formatDisplayDate = (dateString) => {
             if (!dateString) return '';
             return new Date(dateString).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -493,12 +497,13 @@
                     }
                     const isClockIn = record.type === 'เข้างาน';
                     const badgeClass = isClockIn ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+                    const dt = formatDateTime(record.timestamp);
 
                     return `
                     <tr class="hover:bg-gray-50/50 transition group">
                         <td class="py-4 px-5 whitespace-nowrap align-middle">
-                            <p class="font-medium text-gray-800">${formatDate(record.timestamp).split(' ')[0]}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">${formatDate(record.timestamp).split(' ')[1]} น.</p>
+                            <p class="font-medium text-gray-800">${dt.date}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">${dt.time} น.</p>
                         </td>
                         <td class="py-4 px-5 whitespace-nowrap align-middle font-bold text-gray-800">${record.name}</td>
                         <td class="py-4 px-5 whitespace-nowrap align-middle text-center">
@@ -533,12 +538,13 @@
                     if (req.type === 'สลับวันหยุด' && req.swapDate) {
                         dateDisplay += `<br><span class="text-blue-500 font-bold">แทน:</span> ${formatDisplayDate(req.swapDate)}`;
                     }
+                    const dt = formatDateTime(req.timestamp);
 
                     return `
                     <tr class="hover:bg-gray-50/50 transition">
                         <td class="py-4 px-5 whitespace-nowrap align-middle">
-                            <p class="font-medium text-gray-800">${formatDate(req.timestamp).split(' ')[0]}</p>
-                            <p class="text-xs text-gray-400 mt-0.5">ส่งคำร้อง</p>
+                            <p class="font-medium text-gray-800">${dt.date}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">เวลา ${dt.time} น.</p>
                         </td>
                         <td class="py-4 px-5 whitespace-nowrap align-middle font-bold text-gray-800">${req.name}</td>
                         <td class="py-4 px-5 align-middle min-w-[200px]">
